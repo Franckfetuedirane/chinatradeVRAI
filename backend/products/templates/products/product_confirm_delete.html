@@ -1,0 +1,13 @@
+{% extends 'products/base.html' %}
+
+{% block content %}
+<div class="card">
+  <h2>Supprimer produit</h2>
+  <p>Voulez-vous supprimer « {{ object.name }} » ?</p>
+  <form method="post">
+    {% csrf_token %}
+    <button class="danger" type="submit">Confirmer la suppression</button>
+    <a class="button" href="/manage/products/">Annuler</a>
+  </form>
+</div>
+{% endblock %}

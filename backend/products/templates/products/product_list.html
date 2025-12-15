@@ -1,0 +1,32 @@
+{% extends 'products/base.html' %}
+
+{% block content %}
+<div class="card">
+  <h2>Produits</h2>
+  <table>
+    <thead>
+      <tr><th>Image</th><th>Nom</th><th>Statut</th><th>Contacts</th><th>Actions</th></tr>
+    </thead>
+    <tbody>
+      {% for p in products %}
+      <tr>
+        <td>{% if p.image %}<img class="thumb" src="{{ p.image.url }}" alt="{{ p.name }}"/>{% else %}-{% endif %}</td>
+        <td>{{ p.name }}<div class="muted">{{ p.description|default:'—' }}</div></td>
+        <td>{{ p.get_status_display }}</td>
+        <td>
+          {% if p.phone %}Tel: {{ p.phone }}<br/>{% endif %}
+          {% if p.whatsapp %}Wa: {{ p.whatsapp }}<br/>{% endif %}
+          {% if p.email %}Email: {{ p.email }}{% endif %}
+        </td>
+        <td>
+          <a class="button" href="/manage/products/{{ p.pk }}/edit/">Modifier</a>
+          <a class="danger" href="/manage/products/{{ p.pk }}/delete/">Suppr.</a>
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="5" class="muted">Aucun produit</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

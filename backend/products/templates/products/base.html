@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Gestion produits — China Trade Master</title>
+    <style>
+      body{font-family:Arial, Helvetica, sans-serif;background:#f8fafc;color:#111;margin:0;padding:0}
+      .container{max-width:980px;margin:24px auto;padding:0 16px}
+      header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+      a.button{background:#0B5ED7;color:#fff;padding:8px 12px;border-radius:6px;text-decoration:none}
+      table{width:100%;border-collapse:collapse;background:#fff}
+      th,td{padding:10px;border-bottom:1px solid #eee;text-align:left}
+      img.thumb{width:64px;height:40px;object-fit:cover;border-radius:4px}
+      form.inline{display:flex;gap:8px;align-items:center}
+      .muted{color:#666;font-size:0.9rem}
+      .danger{background:#dc2626;color:#fff;padding:6px 10px;border-radius:6px;text-decoration:none}
+      .card{background:#fff;padding:16px;border-radius:6px;box-shadow:0 1px 2px rgba(0,0,0,.04)}
+      input[type=file]{display:block}
+      label{display:block;margin:8px 0 4px}
+      textarea{width:100%}
+      .row{display:flex;gap:12px}
+      .col{flex:1}
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <div>
+          <strong>China Trade Master</strong>
+          <div class="muted">Interface légère de gestion des produits</div>
+        </div>
+        <div>
+          <a class="button" href="/manage/products/">Produits</a>
+          <a class="button" href="/manage/products/add/">Ajouter</a>
+        </div>
+      </header>
+      {% block content %}{% endblock %}
+    </div>
+  </body>
+</html>

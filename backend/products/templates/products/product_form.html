@@ -1,0 +1,35 @@
+{% extends 'products/base.html' %}
+
+{% block content %}
+<div class="card">
+  <h2>{% if form.instance.pk %}Modifier{% else %}Ajouter{% endif %} produit</h2>
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <div class="row">
+      <div class="col">
+        <label>Nom</label>
+        {{ form.name }}
+        <label>Description</label>
+        {{ form.description }}
+        <label>Image</label>
+        {% if form.instance.image %}<div><img class="thumb" src="{{ form.instance.image.url }}"/></div>{% endif %}
+        {{ form.image }}
+      </div>
+      <div class="col">
+        <label>Téléphone</label>
+        {{ form.phone }}
+        <label>WhatsApp</label>
+        {{ form.whatsapp }}
+        <label>Email</label>
+        {{ form.email }}
+        <label>Statut</label>
+        {{ form.status }}
+      </div>
+    </div>
+    <p>
+      <button class="button" type="submit">Enregistrer</button>
+      <a class="danger" href="/manage/products/">Annuler</a>
+    </p>
+  </form>
+</div>
+{% endblock %}
