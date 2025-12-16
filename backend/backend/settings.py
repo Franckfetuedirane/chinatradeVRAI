@@ -76,6 +76,9 @@ USE_TZ = True
 
 STATIC_URL = "/static/"
 
+# Directory where `collectstatic` will gather static files for deployment
+STATIC_ROOT = BASE_DIR / "staticfiles"
+
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # CORS for local dev
