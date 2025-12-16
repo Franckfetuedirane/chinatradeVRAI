@@ -93,4 +93,16 @@ REST_FRAMEWORK = {
 
 # Media files (uploaded product images)
 MEDIA_URL = "/media/"
-MEDIA_ROOT = BASE_DIR / "media"
+# MEDIA_ROOT = BASE_DIR / "media"
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+
+INSTALLED_APPS += ["cloudinary_storage", "cloudinary"]
+
+DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
+
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': 'chinaTrade',
+    'API_KEY': '243164795782213',
+    'API_SECRET': 'MyH92e4c3-kJrztCuAs3i26Z_9Y'
+}
