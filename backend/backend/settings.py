@@ -98,11 +98,9 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 
 INSTALLED_APPS += ["cloudinary_storage", "cloudinary"]
-
-DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
-
 CLOUDINARY_STORAGE = {
-    'CLOUD_NAME': 'chinaTrade',
-    'API_KEY': '243164795782213',
-    'API_SECRET': 'MyH92e4c3-kJrztCuAs3i26Z_9Y'
+    'CLOUD_NAME': os.environ.get('CLOUDINARY_CLOUD_NAME'),
+    'API_KEY': os.environ.get('CLOUDINARY_API_KEY'),
+    'API_SECRET': os.environ.get('CLOUDINARY_API_SECRET'),
 }
+DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
