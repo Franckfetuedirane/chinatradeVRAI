@@ -1,12 +1,18 @@
 from pathlib import Path
+import os
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = "changeme-for-dev"
+# SECRET_KEY = "changeme-for-dev"
+SECRET_KEY = os.environ.get("SECRET_KEY")
 
-DEBUG = True
+DEBUG = os.environ.get("DEBUG") == "True"
 
-ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
+ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "*").split(",")
+
+# DEBUG = True
+
+# ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
 
 INSTALLED_APPS = [
     "django.contrib.admin",
