@@ -11,11 +11,12 @@ urlpatterns = [
     path("", RedirectView.as_view(url="/api/products/", permanent=False)),
 ]
 
-# Serve media files in development
-if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+# # Serve media files in development
+# if settings.DEBUG:
+#     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
-# Lightweight manage UI
-urlpatterns += [
-    path("manage/", include("products.frontend_urls")),
-]
+# # Lightweight manage UI
+# urlpatterns += [
+#     path("manage/", include("products.frontend_urls")),
+# ]
+# Serve media files in development
