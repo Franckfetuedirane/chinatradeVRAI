@@ -9,9 +9,16 @@ urlpatterns = [
     path("api/", include("products.urls")),
     # Redirect root to the public products API for convenience in dev
     path("", RedirectView.as_view(url="/api/products/", permanent=False)),
+#     path("manage/", include("products.frontend_urls")),
 ]
 
 # # Serve media files in development
+if settings.DEBUG:
+    urlpatterns += [
+        path("manage/", include("products.frontend_urls")),
+    ]
+
+
 # if settings.DEBUG:
 #     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
