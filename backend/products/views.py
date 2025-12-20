@@ -8,4 +8,4 @@ class ProductListAPIView(generics.ListAPIView):
     serializer_class = ProductSerializer
 
 def manage_products(request):
-    return render(request, "products/products_list.html")
+    return render(request, "products/product_list.html")

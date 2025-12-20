@@ -1,4 +1,3 @@
-from django import views
 from django.urls import path
 from .frontend_views import (
     ProductManageListView,
@@ -14,5 +13,4 @@ urlpatterns = [
     path("products/add/", ProductManageCreateView.as_view(), name="products_manage_add"),
     path("products/<int:pk>/edit/", ProductManageUpdateView.as_view(), name="products_manage_edit"),
     path("products/<int:pk>/delete/", ProductManageDeleteView.as_view(), name="products_manage_delete"),
-    path("products/", views.manage_products, name="manage_products"),
 ]
