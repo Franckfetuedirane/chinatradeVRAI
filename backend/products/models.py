@@ -1,5 +1,5 @@
 from django.db import models
-
+from cloudinary.models import CloudinaryField
 
 class Product(models.Model):
     STATUS_AVAILABLE = "available"
@@ -11,7 +11,8 @@ class Product(models.Model):
 
     name = models.CharField(max_length=200)
     description = models.TextField(blank=True)
-    image = models.ImageField(upload_to="products/", blank=True, null=True)
+    # image = models.ImageField(upload_to="products/", blank=True, null=True)
+    image = CloudinaryField('image', blank=True, null=True)
     phone = models.CharField(max_length=50, blank=True)
     whatsapp = models.CharField(max_length=50, blank=True)
     email = models.EmailField(blank=True)
@@ -36,7 +37,8 @@ class Product(models.Model):
 
     name = models.CharField(max_length=200)
     description = models.TextField(blank=True)
-    image = models.ImageField(upload_to="products/", blank=True, null=True)
+    # image = models.ImageField(upload_to="products/", blank=True, null=True)
+    image = CloudinaryField('image', blank=True, null=True)
     phone = models.CharField(max_length=50, blank=True)
     whatsapp = models.CharField(max_length=50, blank=True)
     email = models.EmailField(blank=True)

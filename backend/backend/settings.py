@@ -1,5 +1,8 @@
 from pathlib import Path
 import os
+import cloudinary
+import cloudinary.uploader
+import cloudinary.api
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -24,17 +27,9 @@ INSTALLED_APPS = [
     "rest_framework",
     "corsheaders",
     "products",
+    'cloudinary',
+    'cloudinary_storage',
 ]
-
-# Optional Cloudinary support: only enable if package is installed
-try:
-    import cloudinary  # type: ignore
-    import cloudinary.uploader  # type: ignore
-    import cloudinary.api  # type: ignore
-    INSTALLED_APPS += ["cloudinary", "cloudinary_storage"]
-    CLOUDINARY_AVAILABLE = True
-except Exception:
-    CLOUDINARY_AVAILABLE = False
 
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
@@ -101,16 +96,16 @@ REST_FRAMEWORK = {
     ]
 }
 
-if CLOUDINARY_AVAILABLE:
-    # Cloudinary configuration
-    cloudinary.config(
-        cloud_name=os.environ.get("CLOUDINARY_CLOUD_NAME"),
-        api_key=os.environ.get("CLOUDINARY_API_KEY"),
-        api_secret=os.environ.get("CLOUDINARY_API_SECRET"),
-    )
+# Media files (uploaded product images)
+# MEDIA_URL = "/media/"
+# MEDIA_ROOT = BASE_DIR / "media"
+# MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-    DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
-else:
-    # Fallback to local media files in environments without Cloudinary
-    MEDIA_URL = "/media/"
-    MEDIA_ROOT = BASE_DIR / "media"
+# Cloudinary configuration
+cloudinary.config(
+    cloud_name=os.environ.get("CLOUDINARY_CLOUD_NAME"),
+    api_key=os.environ.get("CLOUDINARY_API_KEY"),
+    api_secret=os.environ.get("CLOUDINARY_API_SECRET"),
+)
+
+DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
