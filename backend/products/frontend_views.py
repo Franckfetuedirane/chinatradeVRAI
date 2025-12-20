@@ -1,6 +1,6 @@
 from django.urls import reverse_lazy
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView
-from django.shortcuts import redirect
+from django.shortcuts import redirect, render
 from .models import Product
 from .forms import ProductForm
 
@@ -29,3 +29,6 @@ class ProductManageDeleteView(DeleteView):
     model = Product
     template_name = "products/product_confirm_delete.html"
     success_url = reverse_lazy("products_manage:products_manage_list")
+
+def manage_products(request):
+    return render(request, "products/products_list.html")
