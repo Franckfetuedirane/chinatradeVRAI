@@ -1,5 +1,5 @@
 import React from "react";
-import logo from "../../logo china.png";
+import logo from "../assets/logo_china.png";
 
 export default function Header() {
   return (

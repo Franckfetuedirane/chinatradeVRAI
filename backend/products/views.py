@@ -7,5 +7,5 @@ class ProductListAPIView(generics.ListAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
 
-def manage_products(request):
-    return render(request, "products/product_list.html")
+# def manage_products(request):
+#     return render(request, "products/product_list.html")

@@ -10,7 +10,7 @@
     <tbody>
       {% for p in products %}
       <tr>
-        <td>{% if p.image %}<img class="thumb" src="{{ p.image.url }}" alt="{{ p.name }}"/>{% else %}-{% endif %}</td>
+        <td>{% if p.get_image_url %}<img class="thumb" src="{{ p.get_image_url }}" alt="{{ p.name }}"/>{% else %}-{% endif %}</td>
         <td>{{ p.name }}<div class="muted">{{ p.description|default:'—' }}</div></td>
         <td>{{ p.get_status_display }}</td>
         <td>

@@ -11,8 +11,15 @@ class ProductAdmin(admin.ModelAdmin):
     actions = ["mark_available", "mark_out_of_stock"]
 
     def image_tag(self, obj):
-        if obj.image and getattr(obj.image, 'url', None):
-            return format_html('<img src="{}" style="width:48px;height:48px;object-fit:cover;border-radius:4px;" />', obj.image.url)
+        try:
+            url = obj.get_image_url()
+        except Exception:
+            url = None
+        if url:
+            return format_html(
+                '<img src="{}" style="width:48px;height:48px;object-fit:cover;border-radius:4px;" />',
+                url,
+            )
         return "-"
     image_tag.short_description = "Image"
 

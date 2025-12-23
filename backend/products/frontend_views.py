@@ -30,5 +30,5 @@ class ProductManageDeleteView(DeleteView):
     template_name = "products/product_confirm_delete.html"
     success_url = reverse_lazy("products_manage:products_manage_list")
 
-def manage_products(request):
-    return render(request, "products/product_list.html")
+# def manage_products(request):
+#     return render(request, "products/product_list.html")

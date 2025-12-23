@@ -1,15 +1,25 @@
 from pathlib import Path
 import os
-import cloudinary
-import cloudinary.uploader
-import cloudinary.api
+from django.core.exceptions import ImproperlyConfigured
+import secrets
+import dj_database_url
+
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECRET_KEY = "changeme-for-dev"
 SECRET_KEY = os.environ.get("SECRET_KEY")
 
-DEBUG = os.environ.get("DEBUG") == "True"
+# DEBUG = os.environ.get("DEBUG") == "True"
+DEBUG = os.environ.get("DEBUG", "True") == "True"
+
+# Provide a safe development fallback for SECRET_KEY; require env var in production
+if not SECRET_KEY:
+    if DEBUG:
+        # generate ephemeral key for local/dev only
+        SECRET_KEY = secrets.token_urlsafe(50)
+    else:
+        raise ImproperlyConfigured("The SECRET_KEY environment variable must be set in production.")
 
 ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "*").split(",")
 
@@ -27,8 +37,8 @@ INSTALLED_APPS = [
     "rest_framework",
     "corsheaders",
     "products",
-    'cloudinary',
-    'cloudinary_storage',
+    "cloudinary",
+    "cloudinary_storage",
 ]
 
 MIDDLEWARE = [
@@ -62,11 +72,19 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "backend.wsgi.application"
 
+# DATABASES = {
+#     "default": {
+#         "ENGINE": "django.db.backends.sqlite3",
+#         "NAME": BASE_DIR / "db.sqlite3",
+#     }
+# }
+
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
-    }
+    "default": dj_database_url.config(
+        default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
+        conn_max_age=600,
+        ssl_require=not DEBUG,
+    )
 }
 
 AUTH_PASSWORD_VALIDATORS = []
@@ -89,6 +107,8 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # CORS for local dev
 CORS_ALLOW_ALL_ORIGINS = True
 
+CORS_ALLOW_CREDENTIALS = True
+
 # Django REST Framework minimal settings
 REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": [
@@ -96,16 +116,24 @@ REST_FRAMEWORK = {
     ]
 }
 
-# Media files (uploaded product images)
-# MEDIA_URL = "/media/"
-# MEDIA_ROOT = BASE_DIR / "media"
-# MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+import cloudinary
+import cloudinary.uploader
+import cloudinary.api
 
-# Cloudinary configuration
-cloudinary.config(
-    cloud_name=os.environ.get("CLOUDINARY_CLOUD_NAME"),
-    api_key=os.environ.get("CLOUDINARY_API_KEY"),
-    api_secret=os.environ.get("CLOUDINARY_API_SECRET"),
-)
+CLOUDINARY_CLOUD_NAME = os.environ.get("CLOUDINARY_CLOUD_NAME")
+CLOUDINARY_API_KEY = os.environ.get("CLOUDINARY_API_KEY")
+CLOUDINARY_API_SECRET = os.environ.get("CLOUDINARY_API_SECRET")
 
-DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
+if CLOUDINARY_CLOUD_NAME and CLOUDINARY_API_KEY and CLOUDINARY_API_SECRET:
+    cloudinary.config(
+        cloud_name=CLOUDINARY_CLOUD_NAME,
+        api_key=CLOUDINARY_API_KEY,
+        api_secret=CLOUDINARY_API_SECRET,
+        secure=True,
+    )
+    DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
+else:
+    # local uniquement
+    MEDIA_ROOT = BASE_DIR / "media"
+    MEDIA_URL = "/media/"
+    DEFAULT_FILE_STORAGE = "django.core.files.storage.FileSystemStorage"
