@@ -21,7 +21,9 @@ if not SECRET_KEY:
     else:
         raise ImproperlyConfigured("The SECRET_KEY environment variable must be set in production.")
 
-ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "*").split(",")
+ALLOWED_HOSTS = [
+    h.strip() for h in os.environ.get("ALLOWED_HOSTS", "").split(",") if h.strip()
+]
 
 # DEBUG = True
 
