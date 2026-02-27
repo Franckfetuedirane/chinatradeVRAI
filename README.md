@@ -1,41 +1,40 @@
 # China Trade Master
 
-Petit site vitrine "China Trade Master" — backend Django + DRF, frontend React (Vite) + Tailwind.
+Site vitrine produits avec:
+- Backend: Django + Django REST Framework
+- Frontend: React (Vite) + Tailwind CSS
 
-## Objectif
+Objectif: exposer un catalogue produits avec contacts (t�l�phone, WhatsApp, email), sans panier ni paiement.
 
-Présenter des produits (images, description, contact) sans panier ni paiement. Back-office léger pour gérer les produits.
+## Architecture
 
-## Prérequis
+- `backend/`: API, admin Django, interface l�g�re de gestion des produits
+- `frontend/`: site vitrine React consommant l�API produits
 
-- Python 3.11+ (venv recommandé)
-- Node.js + npm
+## Pr�requis
 
-## Backend (Django)
+- Python 3.11+
+- Node.js 18+ et npm
+- PowerShell (Windows) ou shell �quivalent
 
-Ouvrir PowerShell et exécuter :
+## Installation et lancement (local)
+
+### 1) Backend
 
 ```powershell
 cd backend
+python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
 python manage.py migrate
-python manage.py seed_products      # (optionnel) remplir d'exemples depuis media/products
-python manage.py collectstatic --noinput
+python manage.py createsuperuser
+python manage.py seed_products   # optionnel, charge des exemples
 python manage.py runserver
 ```
 
-API et pages locales (backend en `runserver`) :
+Backend local: `http://127.0.0.1:8000/`
 
-- Backend (dev): http://127.0.0.1:8000/
-- Admin Django: http://127.0.0.1:8000/admin/
-- API produits (read-only): http://127.0.0.1:8000/api/products/
-- Back-office léger: http://127.0.0.1:8000/manage/products/
-- Edit produit exemple (id 40): http://127.0.0.1:8000   
-- Media (images uploadées): http://127.0.0.1:8000/media/
-- Static collectés: `backend/staticfiles/` (dossier local)
-
-## Frontend (React / Vite)
+### 2) Frontend
 
 ```powershell
 cd frontend
@@ -43,40 +42,134 @@ npm install
 npm run dev
 ```
 
-Frontend (dev) : http://localhost:5173/
+Frontend local: `http://localhost:5173/`
 
-## Liens distants (exemples)
+## Variables d�environnement (Backend)
 
-Remplacez `your-domain.example` par votre domaine réel si vous déployez :
+Le backend lit la configuration depuis les variables d�environnement:
 
-- Site (production) : https://your-domain.example/
-- API produits (production) : https://your-domain.example/api/products/
+- `SECRET_KEY`: secret Django (obligatoire en production)
+- `DEBUG`: `True` ou `False`
+- `DATABASE_URL`: URL DB (sinon SQLite local par d�faut)
+- `CLOUDINARY_CLOUD_NAME`
+- `CLOUDINARY_API_KEY`
+- `CLOUDINARY_API_SECRET`
 
-## Fichiers utiles
+Exemple `.env` (d�veloppement):
 
-- `backend/backend/settings.py` — configuration Django (MEDIA_ROOT, STATIC_ROOT, CORS, etc.)
-- `backend/media/products/` — images produits
-- `frontend/logo china.png` — logo utilisé dans l'en-tête et comme favicon
-- `frontend/src/components/Header.jsx` — en-tête (logo + nom)
-
-## Suggestions / recommandations
-
-- Renommer `frontend/logo china.png` pour enlever l'espace (ex. `logo-china.png`) :
-
-```powershell
-# depuis la racine du projet
-cd frontend
-ren "logo china.png" logo-china.png
-# puis corriger les imports dans le code (Header.jsx et index.html)
+```env
+SECRET_KEY=dev-secret-change-me
+DEBUG=True
+DATABASE_URL=sqlite:///db.sqlite3
 ```
 
-- Protéger la partie `/manage/` en ajoutant une authentification (optionnel).
-- Ajouter un script de déploiement et config de domaine pour le `STATIC_ROOT` et `MEDIA` en production.
+Exemple `.env` (production):
 
----
+```env
+SECRET_KEY=replace-with-strong-secret
+DEBUG=False
+DATABASE_URL=postgres://USER:PASSWORD@HOST:PORT/DBNAME
+CLOUDINARY_CLOUD_NAME=...
+CLOUDINARY_API_KEY=...
+CLOUDINARY_API_SECRET=...
+```
 
-Faites-moi savoir si vous voulez :
+Notes:
+- Si Cloudinary est configur�, les m�dias utilisent Cloudinary.
+- Sinon, stockage local dans `backend/media/`.
 
-- que je renomme automatiquement le logo et corrige les imports,
-- que j'ajoute la liste complète des routes discovery (ex. routes internes du frontend),
-- ou que je génère un `docker-compose` simple pour déployer localement.
+## Configuration API c�t� Frontend (important)
+
+Actuellement l�URL API est hardcod�e dans `frontend/src/components/ProductGrid.jsx`.
+
+Il est recommand� de passer par une variable Vite:
+
+```env
+VITE_API_URL=http://127.0.0.1:8000/api/products/
+```
+
+Puis d�utiliser `import.meta.env.VITE_API_URL` dans le code frontend.
+
+## Endpoints principaux
+
+- API produits (read-only): `GET /api/products/`
+- Admin Django: `/admin/`
+- Interface l�g�re gestion produits: `/manage/products/`
+- Route racine `/` redirige vers `/api/products/`
+
+## Donn�es de d�monstration (`seed_products`)
+
+Commande:
+
+```powershell
+python manage.py seed_products
+```
+
+Comportement:
+- Lit les images depuis `backend/media/products/`
+- Lit optionnellement `products.json` ou `products.csv` dans ce dossier
+- Cr�e ou met � jour les produits
+- Si `products.json` absent, g�n�re un JSON par d�faut
+
+## S�curit� et checklist production
+
+Avant mise en production:
+
+- Mettre `DEBUG=False`
+- Remplacer `ALLOWED_HOSTS=['*']` par une liste stricte de domaines
+- D�sactiver `CORS_ALLOW_ALL_ORIGINS=True` et autoriser seulement les origines frontend
+- D�finir une vraie `SECRET_KEY`
+- Configurer HTTPS (reverse proxy / plateforme)
+- V�rifier la configuration m�dias/statiques selon l�h�bergement
+
+## D�ploiement (r�sum�)
+
+Backend:
+- `python manage.py migrate`
+- `python manage.py collectstatic --noinput`
+- Lancer via Gunicorn (pr�sent dans `requirements.txt`) derri�re un proxy
+
+Frontend:
+- `npm run build`
+- Servir le dossier `frontend/dist/`
+
+## Limitations actuelles / points connus
+
+- URL API frontend hardcod�e (� externaliser en `VITE_API_URL`)
+- `ALLOWED_HOSTS=['*']` et CORS global: acceptable en dev, non en prod
+- Certains artefacts de build/donn�es sont pr�sents dans le repo (`node_modules`, `dist`, `db.sqlite3`, `staticfiles`, `media`) et devraient id�alement �tre ignor�s via `.gitignore`
+- Le favicon dans `frontend/index.html` pointe vers un chemin potentiellement incorrect (`/logo%30china.png`)
+
+## Commandes utiles
+
+```powershell
+# Backend
+cd backend
+.\.venv\Scripts\Activate.ps1
+python manage.py runserver
+
+# Frontend
+cd frontend
+npm run dev
+```
+
+## Fichiers cl�s
+
+- `backend/backend/settings.py`: config Django, DB, CORS, Cloudinary
+- `backend/backend/urls.py`: routes principales
+- `backend/products/models.py`: mod�le `Product`
+- `backend/products/management/commands/seed_products.py`: import/seed produits
+- `frontend/src/components/ProductGrid.jsx`: chargement API c�t� frontend
+
+
+
+ l’interface d’admin personnalisée est :
+
+https://alluring-art-production-5c03.up.railway.app/manage/products/
+
+Et pour gérer :
+
+Ajouter : https://alluring-art-production-5c03.up.railway.app/manage/products/add/
+Modifier : https://alluring-art-production-5c03.up.railway.app/manage/products/<id>/edit/
+Supprimer : https://alluring-art-production-5c03.up.railway.app/manage/products/<id>/delete/
+

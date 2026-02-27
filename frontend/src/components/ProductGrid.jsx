@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import ProductCard from "./ProductCard";
 
-const API_URL = "http://127.0.0.1:8000/api/products/";
-// const API_URL = "https://chinatradevrai.onrender.com/api/products/";
+// const API_URL = "http://127.0.0.1:8000/api/products/";
+const API_URL = "alluring-art-production-5c03.up.railway.app";
 
 export default function ProductGrid() {
   const [products, setProducts] = useState([]);

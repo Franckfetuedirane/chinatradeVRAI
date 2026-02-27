@@ -109,6 +109,22 @@ CORS_ALLOW_ALL_ORIGINS = True
 
 CORS_ALLOW_CREDENTIALS = True
 
+# CSRF trusted origins (required for HTTPS form POSTs behind custom domains/proxies)
+_default_csrf_trusted = [
+    "https://alluring-art-production-5c03.up.railway.app",
+    "http://127.0.0.1:8000",
+    "http://localhost:8000",
+]
+_env_csrf = os.environ.get("CSRF_TRUSTED_ORIGINS", "")
+_extra_csrf = [o.strip() for o in _env_csrf.split(",") if o.strip()]
+CSRF_TRUSTED_ORIGINS = _default_csrf_trusted + _extra_csrf
+
+# Railway/proxy HTTPS support for secure cookies and request scheme detection
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+if not DEBUG:
+    CSRF_COOKIE_SECURE = True
+    SESSION_COOKIE_SECURE = True
+
 # Django REST Framework minimal settings
 REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": [
