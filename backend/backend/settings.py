@@ -21,11 +21,7 @@ if not SECRET_KEY:
     else:
         raise ImproperlyConfigured("The SECRET_KEY environment variable must be set in production.")
 
-ALLOWED_HOSTS = [
-    'alluring-art-production-5c03.up.railway.app', 
-    'localhost', 
-    '127.0.0.1'
-]
+ALLOWED_HOSTS = ['*']
 
 # DEBUG = True
 
