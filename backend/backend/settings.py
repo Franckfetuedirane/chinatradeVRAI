@@ -22,7 +22,9 @@ if not SECRET_KEY:
         raise ImproperlyConfigured("The SECRET_KEY environment variable must be set in production.")
 
 ALLOWED_HOSTS = [
-    h.strip() for h in os.environ.get("ALLOWED_HOSTS", "").split(",") if h.strip()
+    'alluring-art-production-5c03.up.railway.app', 
+    'localhost', 
+    '127.0.0.1'
 ]
 
 # DEBUG = True
