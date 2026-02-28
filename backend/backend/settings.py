@@ -140,7 +140,28 @@ CLOUDINARY_CLOUD_NAME = os.environ.get("CLOUDINARY_CLOUD_NAME")
 CLOUDINARY_API_KEY = os.environ.get("CLOUDINARY_API_KEY")
 CLOUDINARY_API_SECRET = os.environ.get("CLOUDINARY_API_SECRET")
 
-if CLOUDINARY_CLOUD_NAME and CLOUDINARY_API_KEY and CLOUDINARY_API_SECRET:
+_cloudinary_values = [
+    CLOUDINARY_CLOUD_NAME,
+    CLOUDINARY_API_KEY,
+    CLOUDINARY_API_SECRET,
+]
+_cloudinary_configured = all(_cloudinary_values)
+_cloudinary_partially_configured = any(_cloudinary_values) and not _cloudinary_configured
+
+if _cloudinary_partially_configured:
+    raise ImproperlyConfigured(
+        "Cloudinary config is incomplete. Set CLOUDINARY_CLOUD_NAME, "
+        "CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET."
+    )
+
+# Product.image uses CloudinaryField; in production uploads require Cloudinary credentials.
+if not DEBUG and not _cloudinary_configured:
+    raise ImproperlyConfigured(
+        "Cloudinary credentials are required in production. "
+        "Set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET."
+    )
+
+if _cloudinary_configured:
     cloudinary.config(
         cloud_name=CLOUDINARY_CLOUD_NAME,
         api_key=CLOUDINARY_API_KEY,
