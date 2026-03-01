@@ -172,3 +172,6 @@ if _cloudinary_configured:
     DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
 else:
     DEFAULT_FILE_STORAGE = "django.core.files.storage.FileSystemStorage"
+
+# Expose Cloudinary availability for form-level validation.
+CLOUDINARY_ENABLED = _cloudinary_configured
