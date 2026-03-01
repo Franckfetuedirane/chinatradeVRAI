@@ -154,18 +154,25 @@ _cloudinary_configured = False
 try:
     import cloudinary
 
+    def _has_cloudinary_credentials() -> bool:
+        cfg = cloudinary.config()
+        return bool(getattr(cfg, "cloud_name", None) and getattr(cfg, "api_key", None) and getattr(cfg, "api_secret", None))
+
     if CLOUDINARY_URL:
         cloudinary.config(cloudinary_url=CLOUDINARY_URL, secure=True)
-        _cloudinary_configured = True
-    elif all([CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET]):
+        _cloudinary_configured = _has_cloudinary_credentials()
+
+    # Fallback to explicit vars if URL is missing or malformed.
+    if (not _cloudinary_configured) and all([CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET]):
         cloudinary.config(
             cloud_name=CLOUDINARY_CLOUD_NAME,
             api_key=CLOUDINARY_API_KEY,
             api_secret=CLOUDINARY_API_SECRET,
             secure=True,
         )
-        _cloudinary_configured = True
-except Exception:
+        _cloudinary_configured = _has_cloudinary_credentials()
+except Exception as e:
+    print(f"Cloudinary configuration error: {e}")
     _cloudinary_configured = False
 
 if _cloudinary_configured:
