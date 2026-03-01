@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
 import ProductCard from "./ProductCard";
 
-// const API_URL = "http://127.0.0.1:8000/api/products/";
-const API_URL = "https://alluring-art-production-5c03.up.railway.app/api/products/";
+// const API_URL = "https://alluring-art-production-5c03.up.railway.app/api/products/";
+const API_URL = "http://127.0.0.1:8000/api/products/";
+const FETCH_TIMEOUT_MS = 12000;
 
 export default function ProductGrid() {
   const [products, setProducts] = useState([]);
@@ -12,7 +13,10 @@ export default function ProductGrid() {
   useEffect(() => {
     let mounted = true;
     setLoading(true);
-    fetch(API_URL)
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+
+    fetch(API_URL, { signal: controller.signal })
       .then(async (res) => {
         if (!res.ok) {
           const text = await res.text().catch(() => "");
@@ -29,13 +33,19 @@ export default function ProductGrid() {
       })
       .catch((err) => {
         if (!mounted) return;
+        console.error("ProductGrid fetch error:", err);
         setError(err);
         setProducts([]);
       })
-      .finally(() => mounted && setLoading(false));
+      .finally(() => {
+        clearTimeout(timeoutId);
+        mounted && setLoading(false);
+      });
 
     return () => {
       mounted = false;
+      clearTimeout(timeoutId);
+      controller.abort();
     };
   }, []);
 
@@ -44,6 +54,13 @@ export default function ProductGrid() {
   if (error) {
     if (error.status === 404) {
       return <div className="text-center text-red-600 py-8">API introuvable (404) — vérifiez que le backend tourne.</div>;
+    }
+    if (error.name === "AbortError") {
+      return (
+        <div className="text-center text-red-600 py-8">
+          Requête annulée (timeout {FETCH_TIMEOUT_MS / 1000}s). Vérifiez que l'API répond et que le réseau est OK.
+        </div>
+      );
     }
     return <div className="text-center text-red-600 py-8">Erreur lors du chargement des produits : {String(error.message)}</div>;
   }
@@ -60,3 +77,7 @@ export default function ProductGrid() {
     </div>
   );
 }
+
+
+
+
