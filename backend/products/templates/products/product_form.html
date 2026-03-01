@@ -3,29 +3,50 @@
 {% block content %}
 <div class="card">
   <h2>{% if form.instance.pk %}Modifier{% else %}Ajouter{% endif %} produit</h2>
+
+  {% if form.non_field_errors %}
+    <div style="background:#fee2e2;color:#991b1b;padding:8px 10px;border-radius:6px;margin-bottom:10px;">
+      {{ form.non_field_errors }}
+    </div>
+  {% endif %}
+
   <form method="post" enctype="multipart/form-data">
     {% csrf_token %}
     <div class="row">
       <div class="col">
         <label>Nom</label>
         {{ form.name }}
+        {% if form.name.errors %}<div class="muted" style="color:#b91c1c;">{{ form.name.errors }}</div>{% endif %}
+
         <label>Description</label>
         {{ form.description }}
+        {% if form.description.errors %}<div class="muted" style="color:#b91c1c;">{{ form.description.errors }}</div>{% endif %}
+
         <label>Image</label>
         {% if form.instance.image %}<div><img class="thumb" src="{{ form.instance.image.url }}"/></div>{% endif %}
         {{ form.image }}
+        {% if form.image.errors %}<div class="muted" style="color:#b91c1c;">{{ form.image.errors }}</div>{% endif %}
       </div>
+
       <div class="col">
-        <label>Téléphone</label>
+        <label>Telephone</label>
         {{ form.phone }}
+        {% if form.phone.errors %}<div class="muted" style="color:#b91c1c;">{{ form.phone.errors }}</div>{% endif %}
+
         <label>WhatsApp</label>
         {{ form.whatsapp }}
+        {% if form.whatsapp.errors %}<div class="muted" style="color:#b91c1c;">{{ form.whatsapp.errors }}</div>{% endif %}
+
         <label>Email</label>
         {{ form.email }}
+        {% if form.email.errors %}<div class="muted" style="color:#b91c1c;">{{ form.email.errors }}</div>{% endif %}
+
         <label>Statut</label>
         {{ form.status }}
+        {% if form.status.errors %}<div class="muted" style="color:#b91c1c;">{{ form.status.errors }}</div>{% endif %}
       </div>
     </div>
+
     <p>
       <button class="button" type="submit">Enregistrer</button>
       <a class="danger" href="/manage/products/">Annuler</a>
