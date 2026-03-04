@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import ProductCard from "./ProductCard";
 
-// const API_URL = "https://alluring-art-production-5c03.up.railway.app/api/products/";
-const API_URL = "http://127.0.0.1:8000/api/products/";
+const API_URL = "https://alluring-art-production-5c03.up.railway.app/api/products/";
+// const API_URL = "http://127.0.0.1:8000/api/products/";
 const FETCH_TIMEOUT_MS = 12000;
 
 export default function ProductGrid() {

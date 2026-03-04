@@ -121,9 +121,11 @@ if DEBUG:
     CORS_ALLOW_ALL_ORIGINS = True
 else:
     CORS_ALLOW_ALL_ORIGINS = False
-    CORS_ALLOWED_ORIGINS = _parse_csv(os.environ.get("CORS_ALLOWED_ORIGINS", ""))
-CORS_ALLOW_CREDENTIALS = True
+    CORS_ALLOWED_ORIGINS = [
+        "https://chinatrade-vrai.vercel.app",
+    ]
 
+CORS_ALLOW_CREDENTIALS = True
 # CSRF
 _default_csrf = [
     "https://alluring-art-production-5c03.up.railway.app",
