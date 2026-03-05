@@ -105,22 +105,9 @@ Commande:
 python manage.py seed_products
 ```
 
-Comportement:
-- Lit les images depuis `backend/media/products/`
-- Lit optionnellement `products.json` ou `products.csv` dans ce dossier
-- Cr�e ou met � jour les produits
-- Si `products.json` absent, g�n�re un JSON par d�faut
 
-## S�curit� et checklist production
 
-Avant mise en production:
 
-- Mettre `DEBUG=False`
-- Remplacer `ALLOWED_HOSTS=['*']` par une liste stricte de domaines
-- D�sactiver `CORS_ALLOW_ALL_ORIGINS=True` et autoriser seulement les origines frontend
-- D�finir une vraie `SECRET_KEY`
-- Configurer HTTPS (reverse proxy / plateforme)
-- V�rifier la configuration m�dias/statiques selon l�h�bergement
 
 ## D�ploiement (r�sum�)
 
@@ -129,16 +116,6 @@ Backend:
 - `python manage.py collectstatic --noinput`
 - Lancer via Gunicorn (pr�sent dans `requirements.txt`) derri�re un proxy
 
-Frontend:
-- `npm run build`
-- Servir le dossier `frontend/dist/`
-
-## Limitations actuelles / points connus
-
-- URL API frontend hardcod�e (� externaliser en `VITE_API_URL`)
-- `ALLOWED_HOSTS=['*']` et CORS global: acceptable en dev, non en prod
-- Certains artefacts de build/donn�es sont pr�sents dans le repo (`node_modules`, `dist`, `db.sqlite3`, `staticfiles`, `media`) et devraient id�alement �tre ignor�s via `.gitignore`
-- Le favicon dans `frontend/index.html` pointe vers un chemin potentiellement incorrect (`/logo%30china.png`)
 
 ## Commandes utiles
 
@@ -165,7 +142,8 @@ npm run dev
 
  l’interface d’admin personnalisée est :
 
-https://alluring-art-production-5c03.up.railway.app/manage/products/
+En ligne : https://alluring-art-production-5c03.up.railway.app/manage/products/
+En locale : http://127.0.0.1:8000/manage/products/
 
 Et pour gérer :
 

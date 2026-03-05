@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from "react";
 import ProductCard from "./ProductCard";
 
-const API_URL = "https://alluring-art-production-5c03.up.railway.app/api/products/";
-// const API_URL = "http://127.0.0.1:8000/api/products/";
+const DEFAULT_API_URL = import.meta.env.DEV
+  ? "http://127.0.0.1:8000/api/products/"
+  : "https://alluring-art-production-5c03.up.railway.app/api/products/";
+const API_URL = import.meta.env.VITE_API_URL || DEFAULT_API_URL;
 const FETCH_TIMEOUT_MS = 12000;
 
 export default function ProductGrid() {

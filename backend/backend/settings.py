@@ -128,13 +128,14 @@ MEDIA_ROOT = BASE_DIR / "media"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # CORS CONFIGURATION
-if DEBUG:
-    CORS_ALLOW_ALL_ORIGINS = True
-else:
-    CORS_ALLOW_ALL_ORIGINS = False
-    CORS_ALLOWED_ORIGINS = [
-        "https://chinatrade-vrai.vercel.app",
-    ]
+_default_cors_origins = [
+    "https://chinatrade-vrai.vercel.app",
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+]
+_extra_cors_origins = _parse_csv(os.environ.get("CORS_ALLOWED_ORIGINS", ""))
+CORS_ALLOWED_ORIGINS = list(dict.fromkeys(_default_cors_origins + _extra_cors_origins))
+CORS_ALLOW_ALL_ORIGINS = DEBUG
 CORS_ALLOW_CREDENTIALS = True
 
 # CSRF CONFIGURATION
