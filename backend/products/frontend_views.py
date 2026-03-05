@@ -3,11 +3,12 @@ from io import TextIOWrapper
 
 from django.contrib import admin
 from django.contrib import messages
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.views import LoginView, LogoutView
 from django.db.models import Q
 from django.http import HttpResponse
 from django.shortcuts import redirect
 from django.urls import NoReverseMatch, reverse, reverse_lazy
-from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.views import View
 from django.views.generic import CreateView, DeleteView, DetailView, FormView, ListView, TemplateView, UpdateView
 
@@ -30,20 +31,20 @@ class ManageQueryMixin:
         return f"{base}?{query}" if query else base
 
 
-class ManageAccessMixin(LoginRequiredMixin, UserPassesTestMixin):
-    login_url = "/admin/login/"
+class ManageLoginView(LoginView):
+    template_name = "products/manage_login.html"
+    redirect_authenticated_user = True
 
-    def test_func(self):
-        return bool(self.request.user and self.request.user.is_staff)
+    def get_success_url(self):
+        return self.get_redirect_url() or reverse("products_manage:dashboard")
 
-    def get_login_url(self):
-        return f"{self.login_url}?next={self.request.path}"
 
-    def handle_no_permission(self):
-        if self.request.user.is_authenticated:
-            messages.error(self.request, "Acces refuse: compte staff requis.")
-            return redirect("/admin/")
-        return super().handle_no_permission()
+class ManageLogoutView(LogoutView):
+    next_page = reverse_lazy("products_manage:manage_login")
+
+
+class ManageAccessMixin(LoginRequiredMixin):
+    login_url = reverse_lazy("products_manage:manage_login")
 
 
 class ProductManageDashboardView(ManageAccessMixin, TemplateView):

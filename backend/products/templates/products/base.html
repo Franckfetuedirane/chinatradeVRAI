@@ -92,7 +92,7 @@
             <div class="user-name">{{ request.user.get_username }}</div>
             <div class="user-actions">
               <a class="btn-login" href="/admin/">Admin</a>
-              <form method="post" action="/admin/logout/?next=/admin/login/?next=/manage/">
+              <form method="post" action="{% url 'products_manage:manage_logout' %}">
                 {% csrf_token %}
                 <button class="btn-logout" type="submit">Logout</button>
               </form>
@@ -100,7 +100,7 @@
           {% else %}
             <div class="user-name">Non connecte</div>
             <div class="user-actions">
-              <a class="btn-login" href="/admin/login/?next=/manage/">Login</a>
+              <a class="btn-login" href="{% url 'products_manage:manage_login' %}?next=/manage/">Login</a>
             </div>
           {% endif %}
         </div>

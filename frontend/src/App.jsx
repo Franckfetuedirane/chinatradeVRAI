@@ -32,8 +32,6 @@ const DEFAULT_API_URL = import.meta.env.DEV
   : "https://alluring-art-production-5c03.up.railway.app/api/products/";
 const API_URL = import.meta.env.VITE_API_URL || DEFAULT_API_URL;
 const CART_KEY = "foesa_cart_v1";
-const API_ORIGIN = new URL(API_URL).origin;
-const FOESA_LOGO_URL = `${API_ORIGIN}/static/products/img/foesa-logo.png`;
 
 function money(value) {
   const num = Number(value || 0);
@@ -209,6 +207,8 @@ export default function App() {
       return [];
     }
   });
+  const [apiOrigin, setApiOrigin] = useState(new URL(API_URL).origin);
+  const FOESA_LOGO_URL = `${apiOrigin}/static/products/img/foesa-logo.png`;
 
   useEffect(() => {
     localStorage.setItem(CART_KEY, JSON.stringify(cart));
@@ -216,24 +216,27 @@ export default function App() {
 
   useEffect(() => {
     let isMounted = true;
-    setLoading(true);
-    fetch(API_URL)
-      .then((r) => {
+    async function loadProducts() {
+      setLoading(true);
+      try {
+        const r = await fetch(API_URL);
         if (!r.ok) throw new Error(`Erreur API ${r.status}`);
-        return r.json();
-      })
-      .then((data) => {
+        const data = await r.json();
         if (!isMounted) return;
         setProducts((data || []).map(normalizeProduct));
+        setApiOrigin(new URL(API_URL).origin);
         setError("");
-      })
-      .catch((e) => {
+      } catch (err) {
         if (!isMounted) return;
-        setError(String(e.message || e));
-      })
-      .finally(() => {
-        if (isMounted) setLoading(false);
-      });
+        setProducts([]);
+        setError(`Impossible de joindre l'API (${API_URL}). Verifie que le backend est demarre.`);
+      }
+    }
+
+    loadProducts().finally(() => {
+      if (isMounted) setLoading(false);
+    });
+
     return () => {
       isMounted = false;
     };
@@ -318,7 +321,6 @@ export default function App() {
               <circle cx="18" cy="20" r="1.6" fill="currentColor"/>
             </svg>
             <span className="cart-count">{cartCount}</span>
-            
           </button>
         </div>
       </header>

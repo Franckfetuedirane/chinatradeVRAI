@@ -1,5 +1,7 @@
 from django.urls import path
 from .frontend_views import (
+    ManageLoginView,
+    ManageLogoutView,
     ProductManageDashboardView,
     ProductManageListView,
     ProductManageDetailView,
@@ -15,6 +17,8 @@ from .frontend_views import (
 app_name = "products_manage"
 
 urlpatterns = [
+    path("login/", ManageLoginView.as_view(), name="manage_login"),
+    path("logout/", ManageLogoutView.as_view(), name="manage_logout"),
     path("", ProductManageDashboardView.as_view(), name="dashboard"),
     path("products/", ProductManageListView.as_view(), name="products_manage_list"),
     path("products/actions/", ProductManageBulkActionView.as_view(), name="products_manage_actions"),

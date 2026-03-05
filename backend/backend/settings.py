@@ -122,10 +122,21 @@ USE_TZ = True
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
+USE_WHITENOISE = _parse_bool(os.environ.get("USE_WHITENOISE"), default=not DEBUG)
+if USE_WHITENOISE:
+    try:
+        import whitenoise  # noqa: F401
+
+        MIDDLEWARE.insert(2, "whitenoise.middleware.WhiteNoiseMiddleware")
+        STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+    except Exception:
+        pass
+
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+SERVE_MEDIA = _parse_bool(os.environ.get("SERVE_MEDIA"), default=True)
 
 # CORS CONFIGURATION
 _default_cors_origins = [
@@ -199,3 +210,4 @@ else:
 
 # Expose Cloudinary availability
 CLOUDINARY_ENABLED = _cloudinary_configured
+
