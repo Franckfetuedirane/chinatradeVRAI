@@ -32,23 +32,29 @@ class Product(models.Model):
 
     def get_image_url(self):
         """
-        Safe image URL getter: tries to use storage-generated URL (Cloudinary),
-        falls back to local MEDIA_URL + file name when url generation raises.
+        Return a usable image URL in both local-file and Cloudinary-legacy modes.
         """
         if not self.image:
             return ""
+
+        raw_value = str(self.image).strip()
+        if raw_value.startswith("http://") or raw_value.startswith("https://"):
+            return raw_value
+
+        cloud_name = getattr(settings, "CLOUDINARY_CLOUD_NAME", "") or os.environ.get("CLOUDINARY_CLOUD_NAME", "")
+        # Legacy data in DB can be a Cloudinary public path like:
+        # image/upload/v1772707028/xxxx.png
+        if cloud_name and (raw_value.startswith("image/upload/") or "/upload/" in raw_value):
+            return f"https://res.cloudinary.com/{cloud_name}/{raw_value.lstrip('/')}"
+
         try:
             return self.image.url
         except Exception:
-            # Fallback for legacy values / unexpected storage errors.
-            raw_value = str(self.image).strip()
+            # Fallback for unexpected storage errors.
             name = (getattr(self.image, "name", "") or raw_value).strip()
             if not name:
                 return ""
-            if name.startswith("http://") or name.startswith("https://"):
-                return name
 
-            cloud_name = getattr(settings, "CLOUDINARY_CLOUD_NAME", "") or os.environ.get("CLOUDINARY_CLOUD_NAME", "")
             if cloud_name and not name.startswith("/"):
                 return f"https://res.cloudinary.com/{cloud_name}/image/upload/{name.lstrip('/')}"
 
