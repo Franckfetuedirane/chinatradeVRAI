@@ -16,15 +16,29 @@
   <section class="panel">
     <div class="row">
       <div>
-        {% if product.get_image_url %}
-          <img src="{{ product.get_image_url }}" alt="{{ product.name }}" style="width:100%;max-width:420px; border-radius:12px; border:1px solid #e2e8f0;" />
+        {% if product.get_gallery_urls %}
+          <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;">
+            {% for media in product.get_gallery_urls %}
+              <img src="{{ media }}" alt="{{ product.name }}" style="width:100%;border-radius:12px; border:1px solid #e2e8f0;" />
+            {% endfor %}
+          </div>
         {% else %}
           <div class="muted">Aucune image.</div>
+        {% endif %}
+        {% if product.video_url %}
+          <div style="margin-top:10px;">
+            <video controls style="width:100%;max-width:420px;border-radius:12px;border:1px solid #e2e8f0;">
+              <source src="{{ product.video_url }}" />
+            </video>
+          </div>
         {% endif %}
       </div>
       <div>
         <p><strong>Nom:</strong> {{ product.name }}</p>
+        <p><strong>Categorie:</strong> {{ product.category.name }}</p>
         <p><strong>Description:</strong><br>{{ product.description|default:"-" }}</p>
+        <p><strong>Prix:</strong> {{ product.price }} XAF</p>
+        <p><strong>Pays / Ville:</strong> {{ product.country|default:"-" }} / {{ product.city|default:"-" }}</p>
         <p>
           <strong>Statut:</strong>
           {% if product.status == 'available' %}

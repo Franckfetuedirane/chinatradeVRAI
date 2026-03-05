@@ -7,11 +7,12 @@ from django.db.models import Q
 from django.http import HttpResponse
 from django.shortcuts import redirect
 from django.urls import NoReverseMatch, reverse, reverse_lazy
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.views import View
 from django.views.generic import CreateView, DeleteView, DetailView, FormView, ListView, TemplateView, UpdateView
 
 from .forms import ProductBulkActionForm, ProductForm, ProductImportForm
-from .models import Product
+from .models import Category, Product
 
 
 class ManageQueryMixin:
@@ -29,7 +30,23 @@ class ManageQueryMixin:
         return f"{base}?{query}" if query else base
 
 
-class ProductManageDashboardView(TemplateView):
+class ManageAccessMixin(LoginRequiredMixin, UserPassesTestMixin):
+    login_url = "/admin/login/"
+
+    def test_func(self):
+        return bool(self.request.user and self.request.user.is_staff)
+
+    def get_login_url(self):
+        return f"{self.login_url}?next={self.request.path}"
+
+    def handle_no_permission(self):
+        if self.request.user.is_authenticated:
+            messages.error(self.request, "Acces refuse: compte staff requis.")
+            return redirect("/admin/")
+        return super().handle_no_permission()
+
+
+class ProductManageDashboardView(ManageAccessMixin, TemplateView):
     template_name = "products/dashboard.html"
 
     def _get_admin_modules(self):
@@ -87,7 +104,7 @@ class ProductManageDashboardView(TemplateView):
         return context
 
 
-class ProductManageListView(ManageQueryMixin, ListView):
+class ProductManageListView(ManageAccessMixin, ManageQueryMixin, ListView):
     model = Product
     template_name = "products/product_list.html"
     context_object_name = "products"
@@ -102,7 +119,10 @@ class ProductManageListView(ManageQueryMixin, ListView):
         if q:
             queryset = queryset.filter(
                 Q(name__icontains=q)
+                | Q(category__name__icontains=q)
                 | Q(description__icontains=q)
+                | Q(country__icontains=q)
+                | Q(city__icontains=q)
                 | Q(phone__icontains=q)
                 | Q(whatsapp__icontains=q)
                 | Q(email__icontains=q)
@@ -138,7 +158,7 @@ class ProductManageListView(ManageQueryMixin, ListView):
         return context
 
 
-class ProductManageDetailView(ManageQueryMixin, DetailView):
+class ProductManageDetailView(ManageAccessMixin, ManageQueryMixin, DetailView):
     model = Product
     template_name = "products/product_detail.html"
     context_object_name = "product"
@@ -149,7 +169,7 @@ class ProductManageDetailView(ManageQueryMixin, DetailView):
         return context
 
 
-class ProductManageCreateView(CreateView):
+class ProductManageCreateView(ManageAccessMixin, CreateView):
     model = Product
     form_class = ProductForm
     template_name = "products/product_form.html"
@@ -168,7 +188,7 @@ class ProductManageCreateView(CreateView):
         return self.success_url
 
 
-class ProductManageUpdateView(ManageQueryMixin, UpdateView):
+class ProductManageUpdateView(ManageAccessMixin, ManageQueryMixin, UpdateView):
     model = Product
     form_class = ProductForm
     template_name = "products/product_form.html"
@@ -192,7 +212,7 @@ class ProductManageUpdateView(ManageQueryMixin, UpdateView):
         return context
 
 
-class ProductManageDeleteView(ManageQueryMixin, DeleteView):
+class ProductManageDeleteView(ManageAccessMixin, ManageQueryMixin, DeleteView):
     model = Product
     template_name = "products/product_confirm_delete.html"
     success_url = reverse_lazy("products_manage:products_manage_list")
@@ -210,13 +230,19 @@ class ProductManageDeleteView(ManageQueryMixin, DeleteView):
         return context
 
 
-class ProductManageDuplicateView(View):
+class ProductManageDuplicateView(ManageAccessMixin, View):
     def post(self, request, pk):
         source = Product.objects.get(pk=pk)
         clone = Product.objects.create(
             name=f"{source.name} (copie)",
+            category=source.category,
             description=source.description,
+            price=source.price,
+            country=source.country,
+            city=source.city,
             image=source.image,
+            gallery_images=source.gallery_images,
+            video_url=source.video_url,
             phone=source.phone,
             whatsapp=source.whatsapp,
             email=source.email,
@@ -226,7 +252,7 @@ class ProductManageDuplicateView(View):
         return redirect("products_manage:products_manage_edit", pk=clone.pk)
 
 
-class ProductManageBulkActionView(View):
+class ProductManageBulkActionView(ManageAccessMixin, View):
     def post(self, request):
         form = ProductBulkActionForm(request.POST)
         selected_ids = request.POST.getlist("selected")
@@ -257,21 +283,45 @@ class ProductManageBulkActionView(View):
         return redirect(next_url)
 
 
-class ProductManageExportCSVView(View):
+class ProductManageExportCSVView(ManageAccessMixin, View):
     def get(self, request):
         response = HttpResponse(content_type="text/csv")
         response["Content-Disposition"] = 'attachment; filename="products_export.csv"'
 
         writer = csv.writer(response)
-        writer.writerow(["id", "name", "description", "image", "phone", "whatsapp", "email", "status", "created_at"])
+        writer.writerow(
+            [
+                "id",
+                "name",
+                "category",
+                "description",
+                "price",
+                "country",
+                "city",
+                "image",
+                "gallery_images",
+                "video_url",
+                "phone",
+                "whatsapp",
+                "email",
+                "status",
+                "created_at",
+            ]
+        )
 
         for p in Product.objects.all().order_by("-created_at"):
             writer.writerow(
                 [
                     p.pk,
                     p.name,
+                    p.category.name if p.category_id else "",
                     p.description,
+                    p.price,
+                    p.country,
+                    p.city,
                     str(p.image or ""),
+                    p.gallery_images,
+                    p.video_url,
                     p.phone,
                     p.whatsapp,
                     p.email,
@@ -283,7 +333,7 @@ class ProductManageExportCSVView(View):
         return response
 
 
-class ProductManageImportCSVView(FormView):
+class ProductManageImportCSVView(ManageAccessMixin, FormView):
     template_name = "products/product_import.html"
     form_class = ProductImportForm
     success_url = reverse_lazy("products_manage:products_manage_list")
@@ -299,8 +349,17 @@ class ProductManageImportCSVView(FormView):
             if not name:
                 continue
 
+            category_name = (row.get("category") or "General").strip() or "General"
+            category, _ = Category.objects.get_or_create(name=category_name)
+
             defaults = {
                 "description": (row.get("description") or "").strip(),
+                "category": category,
+                "price": (row.get("price") or "0").strip() or "0",
+                "country": (row.get("country") or "Cameroun").strip() or "Cameroun",
+                "city": (row.get("city") or "").strip(),
+                "gallery_images": (row.get("gallery_images") or "").strip(),
+                "video_url": (row.get("video_url") or "").strip(),
                 "phone": (row.get("phone") or "").strip(),
                 "whatsapp": (row.get("whatsapp") or "").strip(),
                 "email": (row.get("email") or "").strip(),

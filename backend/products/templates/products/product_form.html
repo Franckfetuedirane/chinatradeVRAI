@@ -28,9 +28,33 @@
           </div>
 
           <div class="field">
+            <label>Categorie</label>
+            {{ form.category }}
+            {% if form.category.errors %}<div class="error">{{ form.category.errors }}</div>{% endif %}
+          </div>
+
+          <div class="field">
             <label>Description</label>
             {{ form.description }}
             {% if form.description.errors %}<div class="error">{{ form.description.errors }}</div>{% endif %}
+          </div>
+
+          <div class="field">
+            <label>Prix (XAF)</label>
+            {{ form.price }}
+            {% if form.price.errors %}<div class="error">{{ form.price.errors }}</div>{% endif %}
+          </div>
+
+          <div class="field">
+            <label>Pays</label>
+            {{ form.country }}
+            {% if form.country.errors %}<div class="error">{{ form.country.errors }}</div>{% endif %}
+          </div>
+
+          <div class="field">
+            <label>Ville</label>
+            {{ form.city }}
+            {% if form.city.errors %}<div class="error">{{ form.city.errors }}</div>{% endif %}
           </div>
 
           <div class="field">
@@ -40,6 +64,18 @@
             {% endif %}
             {{ form.image }}
             {% if form.image.errors %}<div class="error">{{ form.image.errors }}</div>{% endif %}
+          </div>
+
+          <div class="field">
+            <label>Galerie images (une URL/chemin par ligne)</label>
+            {{ form.gallery_images }}
+            {% if form.gallery_images.errors %}<div class="error">{{ form.gallery_images.errors }}</div>{% endif %}
+          </div>
+
+          <div class="field">
+            <label>URL video produit</label>
+            {{ form.video_url }}
+            {% if form.video_url.errors %}<div class="error">{{ form.video_url.errors }}</div>{% endif %}
           </div>
         </div>
 

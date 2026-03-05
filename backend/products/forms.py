@@ -5,9 +5,24 @@ from .models import Product
 class ProductForm(forms.ModelForm):
     class Meta:
         model = Product
-        fields = ["name", "description", "image", "phone", "whatsapp", "email", "status"]
+        fields = [
+            "name",
+            "category",
+            "description",
+            "price",
+            "country",
+            "city",
+            "image",
+            "gallery_images",
+            "video_url",
+            "phone",
+            "whatsapp",
+            "email",
+            "status",
+        ]
         widgets = {
             "description": forms.Textarea(attrs={"rows": 5}),
+            "gallery_images": forms.Textarea(attrs={"rows": 4, "placeholder": "URL/chemin image 1\nURL/chemin image 2"}),
         }
 
 
@@ -26,4 +41,6 @@ class ProductBulkActionForm(forms.Form):
 
 
 class ProductImportForm(forms.Form):
-    file = forms.FileField(help_text="CSV UTF-8 with headers: name, description, image, phone, whatsapp, email, status")
+    file = forms.FileField(
+        help_text="CSV UTF-8 with headers: name, description, price, country, city, image, gallery_images, video_url, phone, whatsapp, email, status"
+    )

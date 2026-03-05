@@ -1,9 +1,10 @@
+{% load static %}
 <!doctype html>
 <html lang="fr">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{% block title %}Back Office{% endblock %} | China Trade Master</title>
+    <title>{% block title %}Back Office{% endblock %} | FOESA</title>
     <style>
       :root {
         --bg: #f5f7fb;
@@ -19,8 +20,18 @@
       body { margin: 0; font-family: Segoe UI, Arial, sans-serif; background: var(--bg); color: var(--ink); }
       .layout { display: grid; grid-template-columns: 230px 1fr; min-height: 100vh; }
       .sidebar { background: #0f172a; color: #e2e8f0; padding: 18px; }
-      .brand { font-weight: 700; margin-bottom: 4px; }
-      .brand-sub { color: #94a3b8; font-size: 13px; margin-bottom: 24px; }
+      .brand-wrap { margin-bottom: 14px; }
+      .brand-logo { width: 100%; max-width: 170px; display: block; margin-bottom: 8px; border-radius: 8px; background: #fff; padding: 6px; }
+      .brand-sub { color: #94a3b8; font-size: 13px; margin-bottom: 16px; }
+      .user-box { border: 1px solid #334155; border-radius: 10px; padding: 10px; margin-bottom: 14px; background: #111827; }
+      .user-label { color: #94a3b8; font-size: 12px; margin-bottom: 4px; }
+      .user-name { font-weight: 600; font-size: 14px; margin-bottom: 8px; word-break: break-word; }
+      .user-actions { display: flex; gap: 8px; }
+      .user-actions a { flex: 1; text-align: center; display: inline-block; padding: 7px 8px; border-radius: 8px; text-decoration: none; font-size: 12px; }
+      .user-actions form { flex: 1; margin: 0; }
+      .user-actions button { width: 100%; border: 0; cursor: pointer; padding: 7px 8px; border-radius: 8px; font-size: 12px; }
+      .btn-login { background: #0b5ed7; color: #fff; }
+      .btn-logout { background: #334155; color: #e2e8f0; }
       .nav a { display: block; color: #e2e8f0; text-decoration: none; padding: 10px 12px; border-radius: 8px; margin-bottom: 6px; }
       .nav a:hover, .nav a.active { background: #1e293b; }
       .main { padding: 22px; }
@@ -69,14 +80,40 @@
   <body>
     <div class="layout">
       <aside class="sidebar">
-        <div class="brand">China Trade Master</div>
-        <div class="brand-sub">Back office produits</div>
+        <div class="brand-wrap">
+          <img class="brand-logo" src="{% static 'products/img/foesa-logo.png' %}" alt="FOESA logo" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" />
+          <div class="brand-sub" style="display:none;">FOESA</div>
+          <div class="brand-sub">Back office FOESA</div>
+        </div>
+
+        <div class="user-box">
+          <div class="user-label">Compte connecte</div>
+          {% if request.user.is_authenticated %}
+            <div class="user-name">{{ request.user.get_username }}</div>
+            <div class="user-actions">
+              <a class="btn-login" href="/admin/">Admin</a>
+              <form method="post" action="/admin/logout/?next=/admin/login/?next=/manage/">
+                {% csrf_token %}
+                <button class="btn-logout" type="submit">Logout</button>
+              </form>
+            </div>
+          {% else %}
+            <div class="user-name">Non connecte</div>
+            <div class="user-actions">
+              <a class="btn-login" href="/admin/login/?next=/manage/">Login</a>
+            </div>
+          {% endif %}
+        </div>
+
         <nav class="nav">
           <a href="{% url 'products_manage:dashboard' %}">Dashboard</a>
           <a href="{% url 'products_manage:products_manage_list' %}">Produits</a>
           <a href="{% url 'products_manage:products_manage_add' %}">Ajouter produit</a>
           <a href="{% url 'products_manage:products_manage_import' %}">Import CSV</a>
           <a href="{% url 'products_manage:products_manage_export' %}">Export CSV</a>
+          <a href="{% url 'admin:auth_user_changelist' %}">Utilisateurs</a>
+          <a href="{% url 'admin:auth_group_changelist' %}">Groupes</a>
+          <a href="/admin/">Django Admin</a>
         </nav>
       </aside>
 
@@ -84,7 +121,7 @@
         <div class="topbar">
           <div>
             <h1 class="title">{% block page_title %}Back Office{% endblock %}</h1>
-            <div class="sub">{% block page_subtitle %}Gestion CRUD sans authentification{% endblock %}</div>
+            <div class="sub">{% block page_subtitle %}Gestion CRUD avec authentification Django{% endblock %}</div>
           </div>
           <div class="actions">{% block top_actions %}{% endblock %}</div>
         </div>
@@ -102,3 +139,4 @@
     </div>
   </body>
 </html>
+

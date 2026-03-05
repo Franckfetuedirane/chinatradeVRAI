@@ -9,7 +9,7 @@
 
 {% block content %}
   <section class="panel">
-    <p class="muted">Colonnes attendues: <code>name,description,image,phone,whatsapp,email,status</code>. Le statut accepte <code>available</code> ou <code>out</code>.</p>
+    <p class="muted">Colonnes attendues: <code>name,category,description,price,country,city,image,gallery_images,video_url,phone,whatsapp,email,status</code>. Le statut accepte <code>available</code> ou <code>out</code>.</p>
 
     <form method="post" enctype="multipart/form-data">
       {% csrf_token %}
@@ -26,3 +26,4 @@
     </form>
   </section>
 {% endblock %}
+

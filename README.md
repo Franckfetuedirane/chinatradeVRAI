@@ -1,4 +1,4 @@
-# China Trade Master
+# FOESA
 
 Site vitrine produits avec:
 - Backend: Django + Django REST Framework
@@ -134,7 +134,7 @@ npm run dev
 
 - `backend/backend/settings.py`: config Django, DB, CORS, Cloudinary
 - `backend/backend/urls.py`: routes principales
-- `backend/products/models.py`: mod�le `Product`
+- `backend/products/models.py`: modele `Product`
 - `backend/products/management/commands/seed_products.py`: import/seed produits
 - `frontend/src/components/ProductGrid.jsx`: chargement API c�t� frontend
 
@@ -151,4 +151,5 @@ Ajouter : https://alluring-art-production-5c03.up.railway.app/manage/products/ad
 Modifier : https://alluring-art-production-5c03.up.railway.app/manage/products/<id>/edit/
 Supprimer : https://alluring-art-production-5c03.up.railway.app/manage/products/<id>/delete/
 
-Ajouter avec Django admin : https://alluring-art-production-5c03.up.railway.app/admin/login/?next=/admin/products/product/
+Ajouter avec Django admin : https://alluring-art-production-5c03.up.railway.app/admin/login/?next=/admin/products/product/ 
+NB: ici la connection a ete bloque
