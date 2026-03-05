@@ -1,0 +1,19 @@
+{% extends "admin/base.html" %}
+{% load static %}
+
+{% block title %}{{ title }} | China Trade Master Admin{% endblock %}
+
+{% block extrastyle %}
+  {{ block.super }}
+  <link rel="stylesheet" href="{% static 'admin/css/admin_brand.css' %}">
+{% endblock %}
+
+{% block branding %}
+  <h1 id="site-name">
+    <a href="{% url 'admin:index' %}">China Trade Master Admin</a>
+  </h1>
+{% endblock %}
+
+{% block nav-global %}
+  <a class="admin-manage-link" href="/manage/">Back Office</a>
+{% endblock %}

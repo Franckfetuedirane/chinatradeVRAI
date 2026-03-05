@@ -1,56 +1,81 @@
-{% extends 'products/base.html' %}
+{% extends "products/base.html" %}
+
+{% block title %}{% if form.instance.pk %}Modifier produit{% else %}Ajouter produit{% endif %}{% endblock %}
+{% block page_title %}{% if form.instance.pk %}Modifier produit{% else %}Ajouter produit{% endif %}{% endblock %}
+{% block page_subtitle %}Edition complete de la fiche produit{% endblock %}
+{% block top_actions %}
+  {% if form.instance.pk %}
+    <a class="btn light" href="{% url 'products_manage:products_manage_detail' form.instance.pk %}">Voir fiche</a>
+  {% endif %}
+  <a class="btn light" href="{{ back_url|default:request.META.HTTP_REFERER|default:'' }}">Retour</a>
+{% endblock %}
 
 {% block content %}
-<div class="card">
-  <h2>{% if form.instance.pk %}Modifier{% else %}Ajouter{% endif %} produit</h2>
+  <section class="panel">
+    <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
 
-  {% if form.non_field_errors %}
-    <div style="background:#fee2e2;color:#991b1b;padding:8px 10px;border-radius:6px;margin-bottom:10px;">
-      {{ form.non_field_errors }}
-    </div>
-  {% endif %}
+      {% if form.non_field_errors %}
+        <div class="msg error">{{ form.non_field_errors }}</div>
+      {% endif %}
 
-  <form method="post" enctype="multipart/form-data">
-    {% csrf_token %}
-    <div class="row">
-      <div class="col">
-        <label>Nom</label>
-        {{ form.name }}
-        {% if form.name.errors %}<div class="muted" style="color:#b91c1c;">{{ form.name.errors }}</div>{% endif %}
+      <div class="row">
+        <div>
+          <div class="field">
+            <label>Nom</label>
+            {{ form.name }}
+            {% if form.name.errors %}<div class="error">{{ form.name.errors }}</div>{% endif %}
+          </div>
 
-        <label>Description</label>
-        {{ form.description }}
-        {% if form.description.errors %}<div class="muted" style="color:#b91c1c;">{{ form.description.errors }}</div>{% endif %}
+          <div class="field">
+            <label>Description</label>
+            {{ form.description }}
+            {% if form.description.errors %}<div class="error">{{ form.description.errors }}</div>{% endif %}
+          </div>
 
-        <label>Image</label>
-        {% if form.instance.image %}<div><img class="thumb" src="{{ form.instance.image.url }}"/></div>{% endif %}
-        {{ form.image }}
-        {% if form.image.errors %}<div class="muted" style="color:#b91c1c;">{{ form.image.errors }}</div>{% endif %}
+          <div class="field">
+            <label>Image</label>
+            {% if form.instance.get_image_url %}
+              <div style="margin-bottom:8px;"><img class="thumb" src="{{ form.instance.get_image_url }}" alt="preview" /></div>
+            {% endif %}
+            {{ form.image }}
+            {% if form.image.errors %}<div class="error">{{ form.image.errors }}</div>{% endif %}
+          </div>
+        </div>
+
+        <div>
+          <div class="field">
+            <label>Telephone</label>
+            {{ form.phone }}
+            {% if form.phone.errors %}<div class="error">{{ form.phone.errors }}</div>{% endif %}
+          </div>
+
+          <div class="field">
+            <label>WhatsApp</label>
+            {{ form.whatsapp }}
+            {% if form.whatsapp.errors %}<div class="error">{{ form.whatsapp.errors }}</div>{% endif %}
+          </div>
+
+          <div class="field">
+            <label>Email</label>
+            {{ form.email }}
+            {% if form.email.errors %}<div class="error">{{ form.email.errors }}</div>{% endif %}
+          </div>
+
+          <div class="field">
+            <label>Statut</label>
+            {{ form.status }}
+            {% if form.status.errors %}<div class="error">{{ form.status.errors }}</div>{% endif %}
+          </div>
+        </div>
       </div>
 
-      <div class="col">
-        <label>Telephone</label>
-        {{ form.phone }}
-        {% if form.phone.errors %}<div class="muted" style="color:#b91c1c;">{{ form.phone.errors }}</div>{% endif %}
-
-        <label>WhatsApp</label>
-        {{ form.whatsapp }}
-        {% if form.whatsapp.errors %}<div class="muted" style="color:#b91c1c;">{{ form.whatsapp.errors }}</div>{% endif %}
-
-        <label>Email</label>
-        {{ form.email }}
-        {% if form.email.errors %}<div class="muted" style="color:#b91c1c;">{{ form.email.errors }}</div>{% endif %}
-
-        <label>Statut</label>
-        {{ form.status }}
-        {% if form.status.errors %}<div class="muted" style="color:#b91c1c;">{{ form.status.errors }}</div>{% endif %}
+      <div class="actions">
+        <button class="btn" type="submit" name="_save">Enregistrer</button>
+        <button class="btn secondary" type="submit" name="_save_and_continue">Enregistrer et continuer</button>
+        <button class="btn light" type="submit" name="_save_and_add">Enregistrer et ajouter un autre</button>
+        <a class="btn light" href="{% url 'products_manage:products_manage_list' %}">Annuler</a>
       </div>
-    </div>
-
-    <p>
-      <button class="button" type="submit">Enregistrer</button>
-      <a class="danger" href="/manage/products/">Annuler</a>
-    </p>
-  </form>
-</div>
+    </form>
+  </section>
 {% endblock %}

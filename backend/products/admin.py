@@ -2,6 +2,10 @@ from django.contrib import admin
 from django.utils.html import format_html
 from .models import Product
 
+admin.site.site_header = "China Trade Master Admin"
+admin.site.site_title = "China Trade Master"
+admin.site.index_title = "Gestion des produits"
+
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):

@@ -1,0 +1,28 @@
+{% extends "products/base.html" %}
+
+{% block title %}Import CSV{% endblock %}
+{% block page_title %}Import CSV{% endblock %}
+{% block page_subtitle %}Mise a jour en masse des produits{% endblock %}
+{% block top_actions %}
+  <a class="btn light" href="{% url 'products_manage:products_manage_export' %}">Telecharger modele (export)</a>
+{% endblock %}
+
+{% block content %}
+  <section class="panel">
+    <p class="muted">Colonnes attendues: <code>name,description,image,phone,whatsapp,email,status</code>. Le statut accepte <code>available</code> ou <code>out</code>.</p>
+
+    <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+      <div class="field">
+        <label>Fichier CSV</label>
+        {{ form.file }}
+        {% if form.file.errors %}<div class="error">{{ form.file.errors }}</div>{% endif %}
+      </div>
+
+      <div class="actions">
+        <button class="btn" type="submit">Importer</button>
+        <a class="btn light" href="{% url 'products_manage:products_manage_list' %}">Retour</a>
+      </div>
+    </form>
+  </section>
+{% endblock %}

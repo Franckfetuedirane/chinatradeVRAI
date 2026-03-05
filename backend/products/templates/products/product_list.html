@@ -1,32 +1,122 @@
-{% extends 'products/base.html' %}
+{% extends "products/base.html" %}
+
+{% block title %}Produits{% endblock %}
+{% block page_title %}Produits{% endblock %}
+{% block page_subtitle %}Liste CRUD avec recherche, tri, filtres, pagination et actions de masse{% endblock %}
+{% block top_actions %}
+  <a class="btn" href="{% url 'products_manage:products_manage_add' %}">Ajouter produit</a>
+  <a class="btn light" href="{% url 'products_manage:products_manage_export' %}">Exporter CSV</a>
+{% endblock %}
 
 {% block content %}
-<div class="card">
-  <h2>Produits</h2>
-  <table>
-    <thead>
-      <tr><th>Image</th><th>Nom</th><th>Statut</th><th>Contacts</th><th>Actions</th></tr>
-    </thead>
-    <tbody>
-      {% for p in products %}
-      <tr>
-        <td>{% if p.get_image_url %}<img class="thumb" src="{{ p.get_image_url }}" alt="{{ p.name }}"/>{% else %}-{% endif %}</td>
-        <td>{{ p.name }}<div class="muted">{{ p.description|default:'—' }}</div></td>
-        <td>{{ p.get_status_display }}</td>
-        <td>
-          {% if p.phone %}Tel: {{ p.phone }}<br/>{% endif %}
-          {% if p.whatsapp %}Wa: {{ p.whatsapp }}<br/>{% endif %}
-          {% if p.email %}Email: {{ p.email }}{% endif %}
-        </td>
-        <td>
-          <a class="button" href="/manage/products/{{ p.pk }}/edit/">Modifier</a>
-          <a class="danger" href="/manage/products/{{ p.pk }}/delete/">Suppr.</a>
-        </td>
-      </tr>
-      {% empty %}
-      <tr><td colspan="5" class="muted">Aucun produit</td></tr>
-      {% endfor %}
-    </tbody>
-  </table>
-</div>
+  <section class="panel">
+    <form method="get" class="row-3">
+      <input type="text" name="q" value="{{ q }}" placeholder="Recherche nom, description, tel, email..." />
+      <select name="status">
+        <option value="">Tous statuts</option>
+        <option value="available" {% if status_filter == 'available' %}selected{% endif %}>Available</option>
+        <option value="out" {% if status_filter == 'out' %}selected{% endif %}>Out of stock</option>
+      </select>
+      <select name="order">
+        <option value="newest" {% if order == 'newest' %}selected{% endif %}>Plus recents</option>
+        <option value="oldest" {% if order == 'oldest' %}selected{% endif %}>Plus anciens</option>
+        <option value="name_asc" {% if order == 'name_asc' %}selected{% endif %}>Nom A-Z</option>
+        <option value="name_desc" {% if order == 'name_desc' %}selected{% endif %}>Nom Z-A</option>
+        <option value="status" {% if order == 'status' %}selected{% endif %}>Statut</option>
+      </select>
+      <div class="actions">
+        <button type="submit" class="btn">Filtrer</button>
+        <a class="btn light" href="{% url 'products_manage:products_manage_list' %}">Reset</a>
+      </div>
+    </form>
+  </section>
+
+  <section class="panel">
+    <form method="post" action="{% url 'products_manage:products_manage_actions' %}" id="bulk-form">
+      {% csrf_token %}
+      <input type="hidden" name="next" value="{% url 'products_manage:products_manage_list' %}{% if query_string %}?{{ query_string }}{% endif %}" />
+
+      <div class="actions" style="margin-bottom:10px;">
+        {{ bulk_form.action }}
+        <button class="btn secondary" type="submit">Executer</button>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th><input type="checkbox" id="check-all" /></th>
+            <th>Image</th>
+            <th>Nom</th>
+            <th>Statut</th>
+            <th>Contacts</th>
+            <th>Date</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for p in products %}
+            <tr>
+              <td><input type="checkbox" name="selected" value="{{ p.pk }}" /></td>
+              <td>
+                {% if p.get_image_url %}
+                  <img class="thumb" src="{{ p.get_image_url }}" alt="{{ p.name }}" />
+                {% else %}
+                  <span class="muted">No image</span>
+                {% endif %}
+              </td>
+              <td>
+                <strong>{{ p.name }}</strong>
+                <div class="muted">{{ p.description|default:"-"|truncatechars:90 }}</div>
+              </td>
+              <td>
+                {% if p.status == 'available' %}
+                  <span class="badge ok">Available</span>
+                {% else %}
+                  <span class="badge out">Out of stock</span>
+                {% endif %}
+              </td>
+              <td>
+                <div>{{ p.phone|default:"-" }}</div>
+                <div>{{ p.whatsapp|default:"-" }}</div>
+                <div>{{ p.email|default:"-" }}</div>
+              </td>
+              <td>{{ p.created_at|date:"Y-m-d H:i" }}</td>
+              <td>
+                <div class="actions">
+                  <a class="btn light" href="{% url 'products_manage:products_manage_detail' p.pk %}?{{ query_string }}">Voir</a>
+                  <a class="btn" href="{% url 'products_manage:products_manage_edit' p.pk %}?{{ query_string }}">Modifier</a>
+                  <a class="btn danger" href="{% url 'products_manage:products_manage_delete' p.pk %}?{{ query_string }}">Supprimer</a>
+                </div>
+              </td>
+            </tr>
+          {% empty %}
+            <tr><td colspan="7" class="muted">Aucun produit pour ce filtre.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </form>
+
+    {% if is_paginated %}
+      <div class="pager">
+        {% if page_obj.has_previous %}
+          <a class="btn light" href="?page={{ page_obj.previous_page_number }}{% if query_string %}&{{ query_string }}{% endif %}">Precedent</a>
+        {% endif %}
+        <span class="muted">Page {{ page_obj.number }} / {{ paginator.num_pages }}</span>
+        {% if page_obj.has_next %}
+          <a class="btn light" href="?page={{ page_obj.next_page_number }}{% if query_string %}&{{ query_string }}{% endif %}">Suivant</a>
+        {% endif %}
+      </div>
+    {% endif %}
+  </section>
+
+  <script>
+    const checkAll = document.getElementById('check-all');
+    if (checkAll) {
+      checkAll.addEventListener('change', (e) => {
+        document.querySelectorAll('input[name="selected"]').forEach((el) => {
+          el.checked = e.target.checked;
+        });
+      });
+    }
+  </script>
 {% endblock %}

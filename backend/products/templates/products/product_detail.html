@@ -1,0 +1,47 @@
+{% extends "products/base.html" %}
+
+{% block title %}Detail produit{% endblock %}
+{% block page_title %}{{ product.name }}{% endblock %}
+{% block page_subtitle %}Fiche detaillee du produit{% endblock %}
+{% block top_actions %}
+  <form method="post" action="{% url 'products_manage:products_manage_duplicate' product.pk %}" style="display:inline;">
+    {% csrf_token %}
+    <button class="btn secondary" type="submit">Dupliquer</button>
+  </form>
+  <a class="btn" href="{% url 'products_manage:products_manage_edit' product.pk %}">Modifier</a>
+  <a class="btn danger" href="{% url 'products_manage:products_manage_delete' product.pk %}">Supprimer</a>
+{% endblock %}
+
+{% block content %}
+  <section class="panel">
+    <div class="row">
+      <div>
+        {% if product.get_image_url %}
+          <img src="{{ product.get_image_url }}" alt="{{ product.name }}" style="width:100%;max-width:420px; border-radius:12px; border:1px solid #e2e8f0;" />
+        {% else %}
+          <div class="muted">Aucune image.</div>
+        {% endif %}
+      </div>
+      <div>
+        <p><strong>Nom:</strong> {{ product.name }}</p>
+        <p><strong>Description:</strong><br>{{ product.description|default:"-" }}</p>
+        <p>
+          <strong>Statut:</strong>
+          {% if product.status == 'available' %}
+            <span class="badge ok">Available</span>
+          {% else %}
+            <span class="badge out">Out of stock</span>
+          {% endif %}
+        </p>
+        <p><strong>Telephone:</strong> {{ product.phone|default:"-" }}</p>
+        <p><strong>WhatsApp:</strong> {{ product.whatsapp|default:"-" }}</p>
+        <p><strong>Email:</strong> {{ product.email|default:"-" }}</p>
+        <p><strong>Cree le:</strong> {{ product.created_at|date:"Y-m-d H:i" }}</p>
+
+        <div class="actions" style="margin-top:12px;">
+          <a class="btn light" href="{{ back_url }}">Retour liste</a>
+        </div>
+      </div>
+    </div>
+  </section>
+{% endblock %}

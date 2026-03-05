@@ -1,0 +1,118 @@
+{% extends "products/base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+{% block page_subtitle %}Vue rapide des produits et acces aux operations CRUD{% endblock %}
+{% block top_actions %}
+  <a class="btn" href="{% url 'products_manage:products_manage_add' %}">Ajouter</a>
+  <a class="btn light" href="{% url 'products_manage:products_manage_list' %}">Voir liste</a>
+{% endblock %}
+
+{% block content %}
+  <section class="grid cols-4">
+    <div class="kpi">
+      <div class="kpi-label">Total produits</div>
+      <div class="kpi-value">{{ total_products }}</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Disponibles</div>
+      <div class="kpi-value">{{ available_products }}</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Rupture</div>
+      <div class="kpi-value">{{ out_products }}</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Actions</div>
+      <div class="actions" style="margin-top:10px;">
+        <a class="btn" href="{% url 'products_manage:products_manage_add' %}">Nouveau</a>
+        <a class="btn light" href="{% url 'products_manage:products_manage_import' %}">Import</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h3 style="margin-top:0;">Derniers produits</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Image</th>
+          <th>Nom</th>
+          <th>Statut</th>
+          <th>Date</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in latest_products %}
+          <tr>
+            <td>
+              {% if p.get_image_url %}
+                <img class="thumb" src="{{ p.get_image_url }}" alt="{{ p.name }}" />
+              {% else %}
+                <span class="muted">No image</span>
+              {% endif %}
+            </td>
+            <td>{{ p.name }}</td>
+            <td>
+              {% if p.status == 'available' %}
+                <span class="badge ok">Available</span>
+              {% else %}
+                <span class="badge out">Out of stock</span>
+              {% endif %}
+            </td>
+            <td>{{ p.created_at|date:"Y-m-d H:i" }}</td>
+            <td>
+              <a class="btn light" href="{% url 'products_manage:products_manage_detail' p.pk %}">Voir</a>
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="5" class="muted">Aucun produit.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+
+  <section class="panel">
+    <h3 style="margin-top:0;">Administration</h3>
+    <p class="muted">Acces rapide aux modules Django admin (Users, Groups, produits et autres).</p>
+
+    {% for module in admin_modules %}
+      <div style="margin-top:14px;">
+        <h4 style="margin:0 0 8px 0;">{{ module.app_name }}</h4>
+        <table>
+          <thead>
+            <tr>
+              <th>Model name</th>
+              <th>Add link</th>
+              <th>Change or view list link</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for model in module.models %}
+              <tr>
+                <td>{{ model.name }}</td>
+                <td>
+                  {% if model.add_url %}
+                    <a class="btn light" href="{{ model.add_url }}">Add</a>
+                  {% else %}
+                    <span class="muted">-</span>
+                  {% endif %}
+                </td>
+                <td>
+                  {% if model.changelist_url %}
+                    <a class="btn light" href="{{ model.changelist_url }}">Change</a>
+                  {% else %}
+                    <span class="muted">-</span>
+                  {% endif %}
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% empty %}
+      <p class="muted">Aucun module admin detecte.</p>
+    {% endfor %}
+  </section>
+{% endblock %}

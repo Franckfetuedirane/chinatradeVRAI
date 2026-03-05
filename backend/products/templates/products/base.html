@@ -2,40 +2,103 @@
 <html lang="fr">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Gestion produits — China Trade Master</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{% block title %}Back Office{% endblock %} | China Trade Master</title>
     <style>
-      body{font-family:Arial, Helvetica, sans-serif;background:#f8fafc;color:#111;margin:0;padding:0}
-      .container{max-width:980px;margin:24px auto;padding:0 16px}
-      header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
-      a.button{background:#0B5ED7;color:#fff;padding:8px 12px;border-radius:6px;text-decoration:none}
-      table{width:100%;border-collapse:collapse;background:#fff}
-      th,td{padding:10px;border-bottom:1px solid #eee;text-align:left}
-      img.thumb{width:64px;height:40px;object-fit:cover;border-radius:4px}
-      form.inline{display:flex;gap:8px;align-items:center}
-      .muted{color:#666;font-size:0.9rem}
-      .danger{background:#dc2626;color:#fff;padding:6px 10px;border-radius:6px;text-decoration:none}
-      .card{background:#fff;padding:16px;border-radius:6px;box-shadow:0 1px 2px rgba(0,0,0,.04)}
-      input[type=file]{display:block}
-      label{display:block;margin:8px 0 4px}
-      textarea{width:100%}
-      .row{display:flex;gap:12px}
-      .col{flex:1}
+      :root {
+        --bg: #f5f7fb;
+        --panel: #ffffff;
+        --ink: #1e293b;
+        --muted: #64748b;
+        --line: #e2e8f0;
+        --primary: #0b5ed7;
+        --danger: #dc2626;
+        --ok: #16a34a;
+      }
+      * { box-sizing: border-box; }
+      body { margin: 0; font-family: Segoe UI, Arial, sans-serif; background: var(--bg); color: var(--ink); }
+      .layout { display: grid; grid-template-columns: 230px 1fr; min-height: 100vh; }
+      .sidebar { background: #0f172a; color: #e2e8f0; padding: 18px; }
+      .brand { font-weight: 700; margin-bottom: 4px; }
+      .brand-sub { color: #94a3b8; font-size: 13px; margin-bottom: 24px; }
+      .nav a { display: block; color: #e2e8f0; text-decoration: none; padding: 10px 12px; border-radius: 8px; margin-bottom: 6px; }
+      .nav a:hover, .nav a.active { background: #1e293b; }
+      .main { padding: 22px; }
+      .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
+      .title { font-size: 22px; margin: 0; }
+      .sub { color: var(--muted); font-size: 14px; margin-top: 4px; }
+      .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 16px; }
+      .panel + .panel { margin-top: 14px; }
+      .btn { display: inline-block; border: 0; cursor: pointer; text-decoration: none; background: var(--primary); color: white; padding: 9px 12px; border-radius: 8px; font-size: 14px; }
+      .btn.secondary { background: #334155; }
+      .btn.light { background: #e2e8f0; color: #0f172a; }
+      .btn.danger { background: var(--danger); }
+      .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+      .messages { margin-bottom: 12px; }
+      .msg { padding: 10px 12px; border-radius: 8px; margin-bottom: 8px; }
+      .msg.success { background: #dcfce7; color: #14532d; }
+      .msg.error { background: #fee2e2; color: #7f1d1d; }
+      .msg.warning { background: #fef3c7; color: #78350f; }
+      .grid { display: grid; gap: 12px; }
+      .grid.cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+      .kpi { border: 1px solid var(--line); border-radius: 10px; padding: 14px; background: #fff; }
+      .kpi-label { color: var(--muted); font-size: 13px; }
+      .kpi-value { font-size: 28px; font-weight: 700; margin-top: 6px; }
+      table { width: 100%; border-collapse: collapse; }
+      th, td { border-bottom: 1px solid var(--line); padding: 10px; text-align: left; vertical-align: top; font-size: 14px; }
+      th { color: var(--muted); font-weight: 600; }
+      .thumb { width: 56px; height: 56px; object-fit: cover; border-radius: 8px; border: 1px solid var(--line); }
+      .badge { display: inline-block; padding: 4px 8px; border-radius: 999px; font-size: 12px; }
+      .badge.ok { background: #dcfce7; color: #166534; }
+      .badge.out { background: #fee2e2; color: #991b1b; }
+      .muted { color: var(--muted); }
+      input, select, textarea { width: 100%; border: 1px solid #cbd5e1; border-radius: 8px; padding: 8px 10px; font: inherit; }
+      .row { display: grid; gap: 12px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .row-3 { display: grid; gap: 10px; grid-template-columns: 2fr 1fr 1fr; }
+      .field { margin-bottom: 12px; }
+      .field label { font-size: 13px; font-weight: 600; margin-bottom: 6px; display: block; }
+      .error { color: #b91c1c; font-size: 13px; }
+      .pager { display: flex; gap: 8px; align-items: center; margin-top: 12px; }
+      @media (max-width: 960px) {
+        .layout { grid-template-columns: 1fr; }
+        .sidebar { position: sticky; top: 0; z-index: 10; }
+        .grid.cols-4, .row, .row-3 { grid-template-columns: 1fr; }
+      }
     </style>
   </head>
   <body>
-    <div class="container">
-      <header>
-        <div>
-          <strong>China Trade Master</strong>
-          <div class="muted">Interface légère de gestion des produits</div>
+    <div class="layout">
+      <aside class="sidebar">
+        <div class="brand">China Trade Master</div>
+        <div class="brand-sub">Back office produits</div>
+        <nav class="nav">
+          <a href="{% url 'products_manage:dashboard' %}">Dashboard</a>
+          <a href="{% url 'products_manage:products_manage_list' %}">Produits</a>
+          <a href="{% url 'products_manage:products_manage_add' %}">Ajouter produit</a>
+          <a href="{% url 'products_manage:products_manage_import' %}">Import CSV</a>
+          <a href="{% url 'products_manage:products_manage_export' %}">Export CSV</a>
+        </nav>
+      </aside>
+
+      <main class="main">
+        <div class="topbar">
+          <div>
+            <h1 class="title">{% block page_title %}Back Office{% endblock %}</h1>
+            <div class="sub">{% block page_subtitle %}Gestion CRUD sans authentification{% endblock %}</div>
+          </div>
+          <div class="actions">{% block top_actions %}{% endblock %}</div>
         </div>
-        <div>
-          <a class="button" href="/manage/products/">Produits</a>
-          <a class="button" href="/manage/products/add/">Ajouter</a>
-        </div>
-      </header>
-      {% block content %}{% endblock %}
+
+        {% if messages %}
+          <div class="messages">
+            {% for message in messages %}
+              <div class="msg {{ message.tags|default:'info' }}">{{ message }}</div>
+            {% endfor %}
+          </div>
+        {% endif %}
+
+        {% block content %}{% endblock %}
+      </main>
     </div>
   </body>
 </html>

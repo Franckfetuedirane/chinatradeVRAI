@@ -1,13 +1,16 @@
-{% extends 'products/base.html' %}
+{% extends "products/base.html" %}
+
+{% block title %}Supprimer produit{% endblock %}
+{% block page_title %}Confirmer suppression{% endblock %}
+{% block page_subtitle %}Action irreversible{% endblock %}
 
 {% block content %}
-<div class="card">
-  <h2>Supprimer produit</h2>
-  <p>Voulez-vous supprimer « {{ object.name }} » ?</p>
-  <form method="post">
-    {% csrf_token %}
-    <button class="danger" type="submit">Confirmer la suppression</button>
-    <a class="button" href="/manage/products/">Annuler</a>
-  </form>
-</div>
+  <section class="panel">
+    <p>Voulez-vous supprimer le produit <strong>{{ object.name }}</strong> ?</p>
+    <form method="post" class="actions">
+      {% csrf_token %}
+      <button class="btn danger" type="submit">Oui, supprimer</button>
+      <a class="btn light" href="{{ back_url }}">Annuler</a>
+    </form>
+  </section>
 {% endblock %}

@@ -1,0 +1,173 @@
+:root {
+  --bg: #f5f7fb;
+  --panel: #ffffff;
+  --ink: #1e293b;
+  --muted: #64748b;
+  --line: #e2e8f0;
+  --primary: #0b5ed7;
+  --danger: #dc2626;
+  --ok: #16a34a;
+}
+
+html, body {
+  background: var(--bg) !important;
+  color: var(--ink);
+}
+
+#header {
+  background: #0f172a !important;
+  color: #e2e8f0 !important;
+  border-bottom: 1px solid #1e293b;
+}
+
+#site-name a {
+  color: #e2e8f0 !important;
+  font-weight: 700;
+}
+
+#user-tools, #user-tools a {
+  color: #cbd5e1 !important;
+}
+
+.admin-manage-link {
+  display: inline-block;
+  margin-left: 10px;
+  padding: 7px 10px;
+  border-radius: 8px;
+  background: #1e293b;
+  color: #e2e8f0 !important;
+  text-decoration: none;
+}
+
+.admin-manage-link:hover {
+  background: #334155;
+}
+
+div.breadcrumbs {
+  background: #1e293b !important;
+  color: #cbd5e1 !important;
+  border: 0;
+}
+
+div.breadcrumbs a {
+  color: #e2e8f0 !important;
+}
+
+#content {
+  background: transparent;
+}
+
+.module,
+.inline-group,
+#changelist,
+.submit-row,
+.object-tools,
+.login #content-main,
+.dashboard .module {
+  border: 1px solid var(--line) !important;
+  border-radius: 12px;
+  background: var(--panel) !important;
+  box-shadow: none !important;
+}
+
+.module h2,
+.module caption,
+.inline-group h2 {
+  background: #f8fafc !important;
+  color: var(--ink) !important;
+  border-bottom: 1px solid var(--line);
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+}
+
+a:link, a:visited {
+  color: var(--primary);
+}
+
+a:hover {
+  color: #0947a6;
+}
+
+.button,
+input[type=submit],
+input[type=button],
+.submit-row input,
+a.button {
+  background: var(--primary) !important;
+  border: 1px solid var(--primary) !important;
+  color: #fff !important;
+  border-radius: 8px !important;
+  padding: 8px 12px !important;
+}
+
+.button.default,
+input[type=submit].default,
+.submit-row input.default {
+  background: #0a58ca !important;
+  border-color: #0a58ca !important;
+}
+
+.deletelink,
+a.deletelink,
+.button.deletelink {
+  background: var(--danger) !important;
+  border-color: var(--danger) !important;
+  color: #fff !important;
+}
+
+input, textarea, select {
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 8px !important;
+  padding: 8px 10px !important;
+}
+
+input:focus, textarea:focus, select:focus {
+  border-color: #93c5fd !important;
+  box-shadow: 0 0 0 3px rgba(59,130,246,.2);
+  outline: 0;
+}
+
+table thead th {
+  background: #f8fafc !important;
+  color: var(--muted) !important;
+}
+
+#changelist table tbody tr:hover {
+  background: #f8fafc;
+}
+
+.paginator {
+  background: transparent !important;
+  border-top: 1px solid var(--line);
+}
+
+.messagelist .success {
+  background: #dcfce7 !important;
+  color: #14532d !important;
+}
+
+.messagelist .warning {
+  background: #fef3c7 !important;
+  color: #78350f !important;
+}
+
+.messagelist .error {
+  background: #fee2e2 !important;
+  color: #7f1d1d !important;
+}
+
+#nav-sidebar {
+  background: #0f172a !important;
+}
+
+#nav-sidebar a {
+  color: #cbd5e1 !important;
+}
+
+#nav-sidebar .current-model {
+  background: #1e293b !important;
+}
+
+.login #container {
+  max-width: 520px;
+}
