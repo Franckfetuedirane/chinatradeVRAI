@@ -173,3 +173,4 @@ Ajouter : https://alluring-art-production-5c03.up.railway.app/manage/products/ad
 Modifier : https://alluring-art-production-5c03.up.railway.app/manage/products/<id>/edit/
 Supprimer : https://alluring-art-production-5c03.up.railway.app/manage/products/<id>/delete/
 
+Ajouter avec Django admin : https://alluring-art-production-5c03.up.railway.app/admin/login/?next=/admin/products/product/

@@ -1,7 +1,6 @@
 from pathlib import Path
 import os
 import secrets
-
 import dj_database_url
 
 # Optional local .env loading (do not crash if python-dotenv is missing)
@@ -11,21 +10,17 @@ try:
 except Exception:
     pass
 
-
 BASE_DIR = Path(__file__).resolve().parent.parent
-
 
 def _parse_bool(value: str, default: bool = False) -> bool:
     if value is None:
         return default
     return str(value).strip().lower() in {"1", "true", "yes", "on"}
 
-
 def _parse_csv(value: str) -> list[str]:
     if not value:
         return []
     return [x.strip() for x in value.split(",") if x.strip()]
-
 
 DEBUG = _parse_bool(os.environ.get("DEBUG"), default=True)
 
@@ -40,6 +35,7 @@ ALLOWED_HOSTS = _parse_csv(os.environ.get("ALLOWED_HOSTS", ""))
 if not ALLOWED_HOSTS:
     ALLOWED_HOSTS = ["*"] if DEBUG else [
         "alluring-art-production-5c03.up.railway.app",
+        "chinatrade-vrai.vercel.app",
         "localhost",
         "127.0.0.1",
     ]
@@ -89,15 +85,30 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "backend.wsgi.application"
 
+# # DATABASE CONFIGURATION
+# DATABASE_URL = os.environ.get("DATABASE_URL", f"sqlite:///{BASE_DIR / 'db.sqlite3'}")
+# _is_postgres_url = DATABASE_URL.startswith("postgres://") or DATABASE_URL.startswith("postgresql://")
+# force_ssl = not DEBUG and _is_postgres_url  # SSL seulement en production
+
+# DATABASES = {
+#     "default": dj_database_url.config(
+#         default=DATABASE_URL,
+#         conn_max_age=600,
+#         ssl_require=force_ssl,
+#     )
+# }
+
+
+
 DATABASE_URL = os.environ.get("DATABASE_URL", "")
 _is_postgres_url = DATABASE_URL.startswith("postgres://") or DATABASE_URL.startswith("postgresql://")
 
+# Si DEBUG=True, désactive SSL
 DATABASES = {
     "default": dj_database_url.config(
-        default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
+        default=DATABASE_URL if DATABASE_URL else f"postgresql://postgres:eden@127.0.0.1:5432/chinatradevrai_dev",
         conn_max_age=600,
-        # Only ask SSL for Postgres URLs. SQLite does not support sslmode.
-        ssl_require=_is_postgres_url,
+        ssl_require=not DEBUG,  # 🔑 SSL seulement en prod
     )
 }
 
@@ -116,7 +127,7 @@ MEDIA_ROOT = BASE_DIR / "media"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# CORS
+# CORS CONFIGURATION
 if DEBUG:
     CORS_ALLOW_ALL_ORIGINS = True
 else:
@@ -124,13 +135,14 @@ else:
     CORS_ALLOWED_ORIGINS = [
         "https://chinatrade-vrai.vercel.app",
     ]
-
 CORS_ALLOW_CREDENTIALS = True
-# CSRF
+
+# CSRF CONFIGURATION
 _default_csrf = [
     "https://alluring-art-production-5c03.up.railway.app",
     "http://127.0.0.1:8000",
     "http://localhost:8000",
+    "https://chinatrade-vrai.vercel.app",
 ]
 CSRF_TRUSTED_ORIGINS = _default_csrf + _parse_csv(os.environ.get("CSRF_TRUSTED_ORIGINS", ""))
 
@@ -140,13 +152,14 @@ if not DEBUG:
     CSRF_COOKIE_SECURE = True
     SESSION_COOKIE_SECURE = True
 
+# REST FRAMEWORK
 REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.AllowAny",
     ]
 }
 
-# Cloudinary config
+# CLOUDINARY CONFIGURATION
 CLOUDINARY_URL = os.environ.get("CLOUDINARY_URL")
 CLOUDINARY_CLOUD_NAME = os.environ.get("CLOUDINARY_CLOUD_NAME")
 CLOUDINARY_API_KEY = os.environ.get("CLOUDINARY_API_KEY")
@@ -164,7 +177,6 @@ try:
         cloudinary.config(cloudinary_url=CLOUDINARY_URL, secure=True)
         _cloudinary_configured = _has_cloudinary_credentials()
 
-    # Fallback to explicit vars if URL is missing or malformed.
     if (not _cloudinary_configured) and all([CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET]):
         cloudinary.config(
             cloud_name=CLOUDINARY_CLOUD_NAME,
@@ -182,5 +194,5 @@ if _cloudinary_configured:
 else:
     DEFAULT_FILE_STORAGE = "django.core.files.storage.FileSystemStorage"
 
-# Expose Cloudinary availability for form-level validation.
+# Expose Cloudinary availability
 CLOUDINARY_ENABLED = _cloudinary_configured
