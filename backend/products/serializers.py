@@ -35,16 +35,18 @@ class ProductSerializer(serializers.ModelSerializer):
             return ""
 
         request = self.context.get("request")
-        if request and url.startswith("/"):
-            return request.build_absolute_uri(url)
+        if request and not (url.startswith("http://") or url.startswith("https://")):
+            normalized = url if url.startswith("/") else f"/{url.lstrip('/')}"
+            return request.build_absolute_uri(normalized)
         return url
 
     def get_gallery_images(self, obj):
         request = self.context.get("request")
         results = []
         for url in obj.get_gallery_urls():
-            if request and url.startswith("/"):
-                results.append(request.build_absolute_uri(url))
+            if request and not (url.startswith("http://") or url.startswith("https://")):
+                normalized = url if url.startswith("/") else f"/{url.lstrip('/')}"
+                results.append(request.build_absolute_uri(normalized))
             else:
                 results.append(url)
         return results

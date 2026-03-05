@@ -75,11 +75,15 @@ class Product(models.Model):
         return self.name
 
     def _resolve_media_url(self, value: str) -> str:
-        raw_value = (value or "").strip()
+        raw_value = (value or "").strip().replace("\\", "/")
         if not raw_value:
             return ""
         if raw_value.startswith("http://") or raw_value.startswith("https://"):
             return raw_value
+        if raw_value.startswith("/media/"):
+            return raw_value
+        if raw_value.startswith("media/"):
+            raw_value = raw_value[len("media/") :]
 
         cloud_name = getattr(settings, "CLOUDINARY_CLOUD_NAME", "") or os.environ.get("CLOUDINARY_CLOUD_NAME", "")
         if cloud_name and (raw_value.startswith("image/upload/") or "/upload/" in raw_value):
