@@ -102,13 +102,13 @@ WSGI_APPLICATION = "backend.wsgi.application"
 
 DATABASE_URL = os.environ.get("DATABASE_URL", "")
 _is_postgres_url = DATABASE_URL.startswith("postgres://") or DATABASE_URL.startswith("postgresql://")
+DB_SSL_REQUIRE = _parse_bool(os.environ.get("DB_SSL_REQUIRE"), default=not DEBUG)
 
-# Si DEBUG=True, désactive SSL
 DATABASES = {
     "default": dj_database_url.config(
         default=DATABASE_URL if DATABASE_URL else f"postgresql://postgres:eden@127.0.0.1:5432/chinatradevrai_dev",
         conn_max_age=600,
-        ssl_require=not DEBUG,  # 🔑 SSL seulement en prod
+        ssl_require=DB_SSL_REQUIRE,
     )
 }
 
@@ -165,30 +165,32 @@ CLOUDINARY_URL = os.environ.get("CLOUDINARY_URL")
 CLOUDINARY_CLOUD_NAME = os.environ.get("CLOUDINARY_CLOUD_NAME")
 CLOUDINARY_API_KEY = os.environ.get("CLOUDINARY_API_KEY")
 CLOUDINARY_API_SECRET = os.environ.get("CLOUDINARY_API_SECRET")
+USE_CLOUDINARY = _parse_bool(os.environ.get("USE_CLOUDINARY"), default=not DEBUG)
 
 _cloudinary_configured = False
-try:
-    import cloudinary
+if USE_CLOUDINARY:
+    try:
+        import cloudinary
 
-    def _has_cloudinary_credentials() -> bool:
-        cfg = cloudinary.config()
-        return bool(getattr(cfg, "cloud_name", None) and getattr(cfg, "api_key", None) and getattr(cfg, "api_secret", None))
+        def _has_cloudinary_credentials() -> bool:
+            cfg = cloudinary.config()
+            return bool(getattr(cfg, "cloud_name", None) and getattr(cfg, "api_key", None) and getattr(cfg, "api_secret", None))
 
-    if CLOUDINARY_URL:
-        cloudinary.config(cloudinary_url=CLOUDINARY_URL, secure=True)
-        _cloudinary_configured = _has_cloudinary_credentials()
+        if CLOUDINARY_URL:
+            cloudinary.config(cloudinary_url=CLOUDINARY_URL, secure=True)
+            _cloudinary_configured = _has_cloudinary_credentials()
 
-    if (not _cloudinary_configured) and all([CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET]):
-        cloudinary.config(
-            cloud_name=CLOUDINARY_CLOUD_NAME,
-            api_key=CLOUDINARY_API_KEY,
-            api_secret=CLOUDINARY_API_SECRET,
-            secure=True,
-        )
-        _cloudinary_configured = _has_cloudinary_credentials()
-except Exception as e:
-    print(f"Cloudinary configuration error: {e}")
-    _cloudinary_configured = False
+        if (not _cloudinary_configured) and all([CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET]):
+            cloudinary.config(
+                cloud_name=CLOUDINARY_CLOUD_NAME,
+                api_key=CLOUDINARY_API_KEY,
+                api_secret=CLOUDINARY_API_SECRET,
+                secure=True,
+            )
+            _cloudinary_configured = _has_cloudinary_credentials()
+    except Exception as e:
+        print(f"Cloudinary configuration error: {e}")
+        _cloudinary_configured = False
 
 if _cloudinary_configured:
     DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"

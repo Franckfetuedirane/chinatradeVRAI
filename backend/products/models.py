@@ -1,5 +1,4 @@
 from django.db import models
-from cloudinary.models import CloudinaryField
 from django.conf import settings
 import os
 
@@ -14,7 +13,7 @@ class Product(models.Model):
 
     name = models.CharField(max_length=200)
     description = models.TextField(blank=True)
-    image = CloudinaryField("image", blank=True, null=True)
+    image = models.ImageField(upload_to="products/", blank=True, null=True)
     phone = models.CharField(max_length=50, blank=True)
     whatsapp = models.CharField(max_length=50, blank=True)
     email = models.EmailField(blank=True)
@@ -41,8 +40,7 @@ class Product(models.Model):
         try:
             return self.image.url
         except Exception:
-            # CloudinaryField values are often stored as public_id strings.
-            # When SDK URL generation fails locally, build a direct Cloudinary URL.
+            # Fallback for legacy values / unexpected storage errors.
             raw_value = str(self.image).strip()
             name = (getattr(self.image, "name", "") or raw_value).strip()
             if not name:
