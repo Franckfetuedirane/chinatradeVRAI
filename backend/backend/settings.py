@@ -86,21 +86,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "backend.wsgi.application"
 
-# # DATABASE CONFIGURATION
-# DATABASE_URL = os.environ.get("DATABASE_URL", f"sqlite:///{BASE_DIR / 'db.sqlite3'}")
-# _is_postgres_url = DATABASE_URL.startswith("postgres://") or DATABASE_URL.startswith("postgresql://")
-# force_ssl = not DEBUG and _is_postgres_url  # SSL seulement en production
-
-# DATABASES = {
-#     "default": dj_database_url.config(
-#         default=DATABASE_URL,
-#         conn_max_age=600,
-#         ssl_require=force_ssl,
-#     )
-# }
-
-
-
 DATABASE_URL = os.environ.get("DATABASE_URL", "")
 _is_postgres_url = DATABASE_URL.startswith("postgres://") or DATABASE_URL.startswith("postgresql://")
 DB_SSL_REQUIRE = _parse_bool(os.environ.get("DB_SSL_REQUIRE"), default=not DEBUG)

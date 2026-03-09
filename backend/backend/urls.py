@@ -1,7 +1,6 @@
 from django.contrib import admin
 from django.urls import path, include, re_path
 from django.http import HttpResponse
-from django.http import Http404
 from django.views.generic.base import RedirectView
 from django.conf import settings
 from django.conf.urls.static import static
@@ -11,14 +10,7 @@ def health(request):
     return HttpResponse("FOESA backend OK")
 
 
-def admin_login_gate(request, *args, **kwargs):
-    next_url = (request.GET.get("next") or "").strip()
-    if next_url in {"/admin", "/admin/"}:
-        raise Http404("Not Found")
-    return admin.site.login(request, *args, **kwargs)
-
 urlpatterns = [
-    path("admin/login/", admin_login_gate, name="admin_login_gate"),
     path("admin/", admin.site.urls),
     path("api/", include("products.urls")),
     path("manage/", include("products.frontend_urls")),
