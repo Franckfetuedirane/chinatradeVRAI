@@ -13,3 +13,8 @@ Path Intellisense (Extention pour l'autocompletion des chemins)
 Material Icon Theme (Extention pour les icones)
 vscode-styled-components (Extention pour styled components)
 project manager (Extention pour gerer les projets)
+
+
+
+(email/username franckfetuef@gmail.com, mot de passe Fetue2025@, nom Fetue).
+

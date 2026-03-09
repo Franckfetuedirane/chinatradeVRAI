@@ -28,24 +28,20 @@ const COUNTRY_CITY_MAP = {
 };
 
 const DEFAULT_API_BASE = import.meta.env.DEV
-  ? "http://127.0.0.1:8000"
+  ? `http://${window.location.hostname || "127.0.0.1"}:8000`
   : "https://alluring-art-production-5c03.up.railway.app";
 const RAW_API_URL = import.meta.env.VITE_API_URL || DEFAULT_API_BASE;
 const API_BASE = RAW_API_URL.replace(/\/+$/, "").replace(/\/api\/products$/, "");
 const PRODUCTS_URL = `${API_BASE}/api/products/`;
 const AUTH_BASE = `${API_BASE}/api/auth`;
+const DEFAULT_AUTH_USER = "franckfetuef@gmail.com";
+const DEFAULT_AUTH_PASS = "Fetue2025@";
 
 const CART_KEY = "foesa_cart_v1";
 
 function money(value) {
   const num = Number(value || 0);
   return `${new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 0 }).format(num)} XAF`;
-}
-
-function getCookie(name) {
-  const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  const match = document.cookie.match(new RegExp(`(?:^|; )${escaped}=([^;]*)`));
-  return match ? decodeURIComponent(match[1]) : "";
 }
 
 async function parseJsonResponse(response) {
@@ -329,14 +325,15 @@ export default function App() {
   const [authError, setAuthError] = useState("");
   const [authMode, setAuthMode] = useState("login");
   const [user, setUser] = useState(null);
-  const [loginForm, setLoginForm] = useState({ identity: "", password: "" });
+  const [loginForm, setLoginForm] = useState({ identity: DEFAULT_AUTH_USER, password: DEFAULT_AUTH_PASS });
   const [registerForm, setRegisterForm] = useState({
-    first_name: "",
-    last_name: "",
-    email: "",
-    username: "",
-    password: "",
+    first_name: "Franck",
+    last_name: "Fetue",
+    email: DEFAULT_AUTH_USER,
+    username: DEFAULT_AUTH_USER,
+    password: DEFAULT_AUTH_PASS,
   });
+  const [csrfToken, setCsrfToken] = useState("");
   const FOESA_LOGO_URL = `${API_BASE}/static/products/img/foesa-logo.png`;
 
   useEffect(() => {
@@ -348,7 +345,9 @@ export default function App() {
 
     async function bootstrapAuth() {
       try {
-        await fetch(`${AUTH_BASE}/csrf/`, { credentials: "include" });
+        const csrfRes = await fetch(`${AUTH_BASE}/csrf/`, { credentials: "include" });
+        const csrfPayload = await parseJsonResponse(csrfRes);
+        setCsrfToken(csrfPayload.csrfToken || "");
         const meRes = await fetch(`${AUTH_BASE}/me/`, { credentials: "include" });
         const mePayload = await parseJsonResponse(meRes);
         if (!isMounted) return;
@@ -435,21 +434,40 @@ export default function App() {
 
   const cartCount = cart.reduce((acc, item) => acc + item.qty, 0);
 
+  async function refreshCsrfToken() {
+    const csrfRes = await fetch(`${AUTH_BASE}/csrf/`, { credentials: "include" });
+    const csrfPayload = await parseJsonResponse(csrfRes);
+    const freshToken = csrfPayload.csrfToken || "";
+    setCsrfToken(freshToken);
+    return freshToken;
+  }
+
   async function authPost(path, payload) {
-    let csrfToken = getCookie("csrftoken");
-    if (!csrfToken) {
-      await fetch(`${AUTH_BASE}/csrf/`, { credentials: "include" });
-      csrfToken = getCookie("csrftoken");
+    let token = csrfToken;
+    if (!token) {
+      token = await refreshCsrfToken();
     }
-    const response = await fetch(`${AUTH_BASE}/${path}/`, {
+    let response = await fetch(`${AUTH_BASE}/${path}/`, {
       method: "POST",
       credentials: "include",
       headers: {
         "Content-Type": "application/json",
-        "X-CSRFToken": csrfToken,
+        "X-CSRFToken": token,
       },
       body: JSON.stringify(payload || {}),
     });
+    if (response.status === 403) {
+      token = await refreshCsrfToken();
+      response = await fetch(`${AUTH_BASE}/${path}/`, {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": token,
+        },
+        body: JSON.stringify(payload || {}),
+      });
+    }
     return parseJsonResponse(response);
   }
 
@@ -463,7 +481,7 @@ export default function App() {
         password: loginForm.password,
       });
       setUser(payload.user);
-      setLoginForm({ identity: "", password: "" });
+      setLoginForm({ identity: DEFAULT_AUTH_USER, password: DEFAULT_AUTH_PASS });
     } catch (err) {
       setAuthError(err.message);
     } finally {
@@ -479,11 +497,11 @@ export default function App() {
       const payload = await authPost("register", registerForm);
       setUser(payload.user);
       setRegisterForm({
-        first_name: "",
-        last_name: "",
-        email: "",
-        username: "",
-        password: "",
+        first_name: "Franck",
+        last_name: "Fetue",
+        email: DEFAULT_AUTH_USER,
+        username: DEFAULT_AUTH_USER,
+        password: DEFAULT_AUTH_PASS,
       });
     } catch (err) {
       setAuthError(err.message);
