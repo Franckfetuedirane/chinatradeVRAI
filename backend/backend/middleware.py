@@ -10,7 +10,8 @@ class SessionIdleTimeoutMiddleware:
         self.timeout = max(60, int(getattr(settings, "SESSION_IDLE_TIMEOUT", 900)))
 
     def __call__(self, request):
-        if request.user.is_authenticated:
+        user = getattr(request, "user", None)
+        if user is not None and user.is_authenticated:
             now = int(time.time())
             last_activity = request.session.get("last_activity")
             if last_activity and now - int(last_activity) > self.timeout:
