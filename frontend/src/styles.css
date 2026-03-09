@@ -78,6 +78,14 @@ input:focus, select:focus, textarea:focus { outline: 0; border-color: #9bbcf0; b
 .muted { color: var(--muted); }
 .error { color: #b91c1c; }
 
+.auth-wrap { display: grid; place-items: center; min-height: 72vh; }
+.auth-card { width: min(560px, 95vw); }
+.auth-tabs { display: flex; gap: 10px; margin-bottom: 14px; }
+.auth-tabs .btn { flex: 1; }
+.auth-form { display: grid; gap: 8px; }
+.auth-form label { font-size: 13px; color: #38517d; font-weight: 600; }
+.auth-form .btn { margin-top: 8px; }
+
 @media (max-width: 1024px) {
   .catalog-shell { width: 100%; }
   .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }

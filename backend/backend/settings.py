@@ -58,6 +58,7 @@ MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    "backend.middleware.SessionIdleTimeoutMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -163,6 +164,16 @@ SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 if not DEBUG:
     CSRF_COOKIE_SECURE = True
     SESSION_COOKIE_SECURE = True
+    SESSION_COOKIE_SAMESITE = "None"
+    CSRF_COOKIE_SAMESITE = "None"
+else:
+    SESSION_COOKIE_SAMESITE = "Lax"
+    CSRF_COOKIE_SAMESITE = "Lax"
+
+SESSION_IDLE_TIMEOUT = int(os.environ.get("SESSION_IDLE_TIMEOUT", "900"))
+SESSION_SAVE_EVERY_REQUEST = True
+SESSION_COOKIE_AGE = int(os.environ.get("SESSION_COOKIE_AGE", "43200"))
+API_PUBLIC_ORIGIN = (os.environ.get("API_PUBLIC_ORIGIN") or "").rstrip("/")
 
 # REST FRAMEWORK
 REST_FRAMEWORK = {
@@ -204,6 +215,13 @@ if USE_CLOUDINARY:
         _cloudinary_configured = False
 
 if _cloudinary_configured:
+    try:
+        import cloudinary
+
+        _cfg = cloudinary.config()
+        CLOUDINARY_CLOUD_NAME = CLOUDINARY_CLOUD_NAME or getattr(_cfg, "cloud_name", "")
+    except Exception:
+        pass
     DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
 else:
     DEFAULT_FILE_STORAGE = "django.core.files.storage.FileSystemStorage"

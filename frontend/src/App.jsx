@@ -27,15 +27,34 @@ const COUNTRY_CITY_MAP = {
   France: ["Paris", "Lyon", "Marseille", "Toulouse"],
 };
 
-const DEFAULT_API_URL = import.meta.env.DEV
-  ? "http://127.0.0.1:8000/api/products/"
-  : "https://alluring-art-production-5c03.up.railway.app/api/products/";
-const API_URL = import.meta.env.VITE_API_URL || DEFAULT_API_URL;
+const DEFAULT_API_BASE = import.meta.env.DEV
+  ? "http://127.0.0.1:8000"
+  : "https://alluring-art-production-5c03.up.railway.app";
+const RAW_API_URL = import.meta.env.VITE_API_URL || DEFAULT_API_BASE;
+const API_BASE = RAW_API_URL.replace(/\/+$/, "").replace(/\/api\/products$/, "");
+const PRODUCTS_URL = `${API_BASE}/api/products/`;
+const AUTH_BASE = `${API_BASE}/api/auth`;
+
 const CART_KEY = "foesa_cart_v1";
 
 function money(value) {
   const num = Number(value || 0);
-  return new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 0 }).format(num) + " XAF";
+  return `${new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 0 }).format(num)} XAF`;
+}
+
+function getCookie(name) {
+  const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const match = document.cookie.match(new RegExp(`(?:^|; )${escaped}=([^;]*)`));
+  return match ? decodeURIComponent(match[1]) : "";
+}
+
+async function parseJsonResponse(response) {
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    const detail = payload.detail || `Erreur ${response.status}`;
+    throw new Error(detail);
+  }
+  return payload;
 }
 
 function normalizeProduct(p) {
@@ -189,10 +208,107 @@ function CartPage({ cart, onQty, onRemove, onBack }) {
   );
 }
 
+function AuthPanel({
+  mode,
+  setMode,
+  authError,
+  onLoginSubmit,
+  onRegisterSubmit,
+  loginForm,
+  setLoginForm,
+  registerForm,
+  setRegisterForm,
+  authBusy,
+}) {
+  return (
+    <section className="auth-wrap">
+      <div className="panel auth-card">
+        <div className="auth-tabs">
+          <button className={`btn ${mode === "login" ? "" : "light"}`} onClick={() => setMode("login")} type="button">Connexion</button>
+          <button className={`btn ${mode === "register" ? "" : "light"}`} onClick={() => setMode("register")} type="button">Inscription</button>
+        </div>
+
+        {authError && <p className="error">{authError}</p>}
+
+        {mode === "login" && (
+          <form className="auth-form" onSubmit={onLoginSubmit}>
+            <label>Email ou username</label>
+            <input
+              type="text"
+              autoComplete="username"
+              value={loginForm.identity}
+              onChange={(e) => setLoginForm((prev) => ({ ...prev, identity: e.target.value }))}
+              required
+            />
+            <label>Mot de passe</label>
+            <input
+              type="password"
+              autoComplete="current-password"
+              value={loginForm.password}
+              onChange={(e) => setLoginForm((prev) => ({ ...prev, password: e.target.value }))}
+              required
+            />
+            <button className="btn" type="submit" disabled={authBusy}>
+              {authBusy ? "Connexion..." : "Se connecter"}
+            </button>
+          </form>
+        )}
+
+        {mode === "register" && (
+          <form className="auth-form" onSubmit={onRegisterSubmit}>
+            <label>Prenom</label>
+            <input
+              type="text"
+              autoComplete="given-name"
+              value={registerForm.first_name}
+              onChange={(e) => setRegisterForm((prev) => ({ ...prev, first_name: e.target.value }))}
+            />
+            <label>Nom</label>
+            <input
+              type="text"
+              autoComplete="family-name"
+              value={registerForm.last_name}
+              onChange={(e) => setRegisterForm((prev) => ({ ...prev, last_name: e.target.value }))}
+            />
+            <label>Email</label>
+            <input
+              type="email"
+              autoComplete="email"
+              value={registerForm.email}
+              onChange={(e) => setRegisterForm((prev) => ({ ...prev, email: e.target.value }))}
+              required
+            />
+            <label>Nom d'utilisateur</label>
+            <input
+              type="text"
+              autoComplete="username"
+              value={registerForm.username}
+              onChange={(e) => setRegisterForm((prev) => ({ ...prev, username: e.target.value }))}
+              required
+            />
+            <label>Mot de passe</label>
+            <input
+              type="password"
+              autoComplete="new-password"
+              value={registerForm.password}
+              onChange={(e) => setRegisterForm((prev) => ({ ...prev, password: e.target.value }))}
+              minLength={8}
+              required
+            />
+            <button className="btn" type="submit" disabled={authBusy}>
+              {authBusy ? "Inscription..." : "Creer mon compte"}
+            </button>
+          </form>
+        )}
+      </div>
+    </section>
+  );
+}
+
 export default function App() {
   const [products, setProducts] = useState([]);
   const [error, setError] = useState("");
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("");
   const [country, setCountry] = useState("Cameroun");
@@ -207,8 +323,21 @@ export default function App() {
       return [];
     }
   });
-  const [apiOrigin, setApiOrigin] = useState(new URL(API_URL).origin);
-  const FOESA_LOGO_URL = `${apiOrigin}/static/products/img/foesa-logo.png`;
+
+  const [authLoading, setAuthLoading] = useState(true);
+  const [authBusy, setAuthBusy] = useState(false);
+  const [authError, setAuthError] = useState("");
+  const [authMode, setAuthMode] = useState("login");
+  const [user, setUser] = useState(null);
+  const [loginForm, setLoginForm] = useState({ identity: "", password: "" });
+  const [registerForm, setRegisterForm] = useState({
+    first_name: "",
+    last_name: "",
+    email: "",
+    username: "",
+    password: "",
+  });
+  const FOESA_LOGO_URL = `${API_BASE}/static/products/img/foesa-logo.png`;
 
   useEffect(() => {
     localStorage.setItem(CART_KEY, JSON.stringify(cart));
@@ -216,31 +345,61 @@ export default function App() {
 
   useEffect(() => {
     let isMounted = true;
-    async function loadProducts() {
-      setLoading(true);
+
+    async function bootstrapAuth() {
       try {
-        const r = await fetch(API_URL);
-        if (!r.ok) throw new Error(`Erreur API ${r.status}`);
-        const data = await r.json();
+        await fetch(`${AUTH_BASE}/csrf/`, { credentials: "include" });
+        const meRes = await fetch(`${AUTH_BASE}/me/`, { credentials: "include" });
+        const mePayload = await parseJsonResponse(meRes);
         if (!isMounted) return;
-        setProducts((data || []).map(normalizeProduct));
-        setApiOrigin(new URL(API_URL).origin);
-        setError("");
-      } catch (err) {
+        setUser(mePayload.authenticated ? mePayload.user : null);
+      } catch {
         if (!isMounted) return;
-        setProducts([]);
-        setError(`Impossible de joindre l'API (${API_URL}). Verifie que le backend est demarre.`);
+        setUser(null);
+      } finally {
+        isMounted && setAuthLoading(false);
       }
     }
 
-    loadProducts().finally(() => {
-      if (isMounted) setLoading(false);
-    });
-
+    bootstrapAuth();
     return () => {
       isMounted = false;
     };
   }, []);
+
+  useEffect(() => {
+    let isMounted = true;
+    if (!user) {
+      setProducts([]);
+      setLoading(false);
+      return () => {
+        isMounted = false;
+      };
+    }
+
+    async function loadProducts() {
+      setLoading(true);
+      try {
+        const r = await fetch(PRODUCTS_URL, { credentials: "include" });
+        if (!r.ok) throw new Error(`Erreur API ${r.status}`);
+        const data = await r.json();
+        if (!isMounted) return;
+        setProducts((data || []).map(normalizeProduct));
+        setError("");
+      } catch (err) {
+        if (!isMounted) return;
+        setProducts([]);
+        setError(`Impossible de joindre l'API (${PRODUCTS_URL}). Verifie la configuration backend.`);
+      } finally {
+        isMounted && setLoading(false);
+      }
+    }
+
+    loadProducts();
+    return () => {
+      isMounted = false;
+    };
+  }, [user]);
 
   const allCountries = useMemo(() => {
     const values = new Set(["Cameroun"]);
@@ -276,6 +435,70 @@ export default function App() {
 
   const cartCount = cart.reduce((acc, item) => acc + item.qty, 0);
 
+  async function authPost(path, payload) {
+    const csrfToken = getCookie("csrftoken");
+    const response = await fetch(`${AUTH_BASE}/${path}/`, {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRFToken": csrfToken,
+      },
+      body: JSON.stringify(payload || {}),
+    });
+    return parseJsonResponse(response);
+  }
+
+  async function onLoginSubmit(event) {
+    event.preventDefault();
+    setAuthBusy(true);
+    setAuthError("");
+    try {
+      const payload = await authPost("login", {
+        username: loginForm.identity,
+        password: loginForm.password,
+      });
+      setUser(payload.user);
+      setLoginForm({ identity: "", password: "" });
+    } catch (err) {
+      setAuthError(err.message);
+    } finally {
+      setAuthBusy(false);
+    }
+  }
+
+  async function onRegisterSubmit(event) {
+    event.preventDefault();
+    setAuthBusy(true);
+    setAuthError("");
+    try {
+      const payload = await authPost("register", registerForm);
+      setUser(payload.user);
+      setRegisterForm({
+        first_name: "",
+        last_name: "",
+        email: "",
+        username: "",
+        password: "",
+      });
+    } catch (err) {
+      setAuthError(err.message);
+    } finally {
+      setAuthBusy(false);
+    }
+  }
+
+  async function onLogout() {
+    try {
+      await authPost("logout", {});
+    } catch {
+      // no-op
+    }
+    setUser(null);
+    setSelected(null);
+    setPage("catalog");
+  }
+
   function addToCart(product) {
     setCart((prev) => {
       const exists = prev.find((it) => it.product.id === product.id);
@@ -307,62 +530,90 @@ export default function App() {
           </div>
         </div>
         <div className="actions">
-          <button className={`btn light ${page === "catalog" ? "is-active" : ""}`} onClick={() => { setPage("catalog"); setSelected(null); }} type="button">Catalogue</button>
-          <button
-            className={`cart-btn ${page === "cart" ? "is-active" : ""}`}
-            onClick={() => setPage("cart")}
-            type="button"
-            aria-label="Ouvrir le chariot"
-            title="Chariot"
-          >
-            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <path d="M3 4h2l2.2 10.2a2 2 0 0 0 2 1.6h7.9a2 2 0 0 0 2-1.5L22 7H7.1" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
-              <circle cx="10" cy="20" r="1.6" fill="currentColor"/>
-              <circle cx="18" cy="20" r="1.6" fill="currentColor"/>
-            </svg>
-            <span className="cart-count">{cartCount}</span>
-          </button>
+          {user && (
+            <>
+              <button className={`btn light ${page === "catalog" ? "is-active" : ""}`} onClick={() => { setPage("catalog"); setSelected(null); }} type="button">Catalogue</button>
+              <button
+                className={`cart-btn ${page === "cart" ? "is-active" : ""}`}
+                onClick={() => setPage("cart")}
+                type="button"
+                aria-label="Ouvrir le chariot"
+                title="Chariot"
+              >
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M3 4h2l2.2 10.2a2 2 0 0 0 2 1.6h7.9a2 2 0 0 0 2-1.5L22 7H7.1" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                  <circle cx="10" cy="20" r="1.6" fill="currentColor" />
+                  <circle cx="18" cy="20" r="1.6" fill="currentColor" />
+                </svg>
+                <span className="cart-count">{cartCount}</span>
+              </button>
+            </>
+          )}
+          {user ? (
+            <button className="btn light" type="button" onClick={onLogout}>Deconnexion</button>
+          ) : null}
         </div>
       </header>
 
-      {page === "catalog" && !selected && (
-        <section className="panel filters">
-          <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Rechercher un produit, une ville, un pays..." />
-          <select value={category} onChange={(e) => setCategory(e.target.value)}>
-            <option value="">Toutes categories</option>
-            {allCategories.map((c) => <option key={c} value={c}>{c}</option>)}
-          </select>
-          <select value={country} onChange={(e) => { setCountry(e.target.value); setCity(""); }}>
-            <option value="">Tous pays</option>
-            {allCountries.map((c) => <option key={c} value={c}>{c}</option>)}
-          </select>
-          <input list="cities" value={city} onChange={(e) => setCity(e.target.value)} placeholder="Ville" />
-          <datalist id="cities">
-            {allCities.map((c) => <option key={c} value={c} />)}
-          </datalist>
-        </section>
-      )}
-
       <main className="content catalog-shell">
-        {loading && <div className="panel">Chargement...</div>}
-        {error && !loading && <div className="panel error">Erreur: {error}</div>}
+        {authLoading && <div className="panel">Verification de la session...</div>}
 
-        {!loading && !error && page === "catalog" && !selected && (
+        {!authLoading && !user && (
+          <AuthPanel
+            mode={authMode}
+            setMode={setAuthMode}
+            authError={authError}
+            onLoginSubmit={onLoginSubmit}
+            onRegisterSubmit={onRegisterSubmit}
+            loginForm={loginForm}
+            setLoginForm={setLoginForm}
+            registerForm={registerForm}
+            setRegisterForm={setRegisterForm}
+            authBusy={authBusy}
+          />
+        )}
+
+        {!authLoading && user && (
           <>
-            <div className="result-head">{filtered.length} produit(s) trouves</div>
-            <section className="grid">
-              {filtered.map((p) => (
-                <ProductCard key={p.id} product={p} onAdd={addToCart} onOpen={(product) => { setSelected(product); setPage("catalog"); }} />
-              ))}
-            </section>
+            {page === "catalog" && !selected && (
+              <section className="panel filters">
+                <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Rechercher un produit, une ville, un pays..." />
+                <select value={category} onChange={(e) => setCategory(e.target.value)}>
+                  <option value="">Toutes categories</option>
+                  {allCategories.map((c) => <option key={c} value={c}>{c}</option>)}
+                </select>
+                <select value={country} onChange={(e) => { setCountry(e.target.value); setCity(""); }}>
+                  <option value="">Tous pays</option>
+                  {allCountries.map((c) => <option key={c} value={c}>{c}</option>)}
+                </select>
+                <input list="cities" value={city} onChange={(e) => setCity(e.target.value)} placeholder="Ville" />
+                <datalist id="cities">
+                  {allCities.map((c) => <option key={c} value={c} />)}
+                </datalist>
+              </section>
+            )}
+
+            {loading && <div className="panel">Chargement...</div>}
+            {error && !loading && <div className="panel error">Erreur: {error}</div>}
+
+            {!loading && !error && page === "catalog" && !selected && (
+              <>
+                <div className="result-head">{filtered.length} produit(s) trouves</div>
+                <section className="grid">
+                  {filtered.map((p) => (
+                    <ProductCard key={p.id} product={p} onAdd={addToCart} onOpen={(product) => { setSelected(product); setPage("catalog"); }} />
+                  ))}
+                </section>
+              </>
+            )}
+
+            {!loading && !error && page === "catalog" && selected && (
+              <ProductDetail product={selected} onBack={() => setSelected(null)} onAdd={addToCart} />
+            )}
+
+            {page === "cart" && <CartPage cart={cart} onQty={setQty} onRemove={removeItem} onBack={() => setPage("catalog")} />}
           </>
         )}
-
-        {!loading && !error && page === "catalog" && selected && (
-          <ProductDetail product={selected} onBack={() => setSelected(null)} onAdd={addToCart} />
-        )}
-
-        {page === "cart" && <CartPage cart={cart} onQty={setQty} onRemove={removeItem} onBack={() => setPage("catalog")} />}
       </main>
     </div>
   );
