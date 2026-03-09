@@ -9,6 +9,8 @@ from django.db.models import Q
 from django.http import HttpResponse
 from django.shortcuts import redirect
 from django.urls import NoReverseMatch, reverse, reverse_lazy
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views import View
 from django.views.generic import CreateView, DeleteView, DetailView, FormView, ListView, TemplateView, UpdateView
 
@@ -31,6 +33,7 @@ class ManageQueryMixin:
         return f"{base}?{query}" if query else base
 
 
+@method_decorator(ensure_csrf_cookie, name="dispatch")
 class ManageLoginView(LoginView):
     template_name = "products/manage_login.html"
     redirect_authenticated_user = True

@@ -18,3 +18,5 @@ project manager (Extention pour gerer les projets)
 
 (email/username franckfetuef@gmail.com, mot de passe Fetue2025@, nom Fetue).
 
+(email/username franckfetuef@gmail.com, mot de passe Fetue2025@, nom Fetue).
+
