@@ -2,6 +2,7 @@ from django.db import models
 from django.conf import settings
 from django.utils.text import slugify
 import os
+from urllib.parse import urlparse
 
 class Category(models.Model):
     name = models.CharField(max_length=120, unique=True)
@@ -74,20 +75,57 @@ class Product(models.Model):
     def __str__(self):
         return self.name
 
+    def _get_cloudinary_cloud_name(self) -> str:
+        cloud_name = (getattr(settings, "CLOUDINARY_CLOUD_NAME", "") or os.environ.get("CLOUDINARY_CLOUD_NAME", "")).strip()
+        if cloud_name:
+            return cloud_name
+
+        cloudinary_url = (getattr(settings, "CLOUDINARY_URL", "") or os.environ.get("CLOUDINARY_URL", "")).strip()
+        if cloudinary_url:
+            try:
+                parsed = urlparse(cloudinary_url)
+                # CLOUDINARY_URL format: cloudinary://api_key:api_secret@cloud_name
+                return (parsed.hostname or "").strip()
+            except Exception:
+                return ""
+        return ""
+
+    def _as_cloudinary_url(self, raw_value: str) -> str:
+        cloud_name = self._get_cloudinary_cloud_name()
+        if not cloud_name:
+            return ""
+
+        normalized = (raw_value or "").strip().replace("\\", "/")
+        if not normalized:
+            return ""
+
+        marker = "image/upload/"
+        idx = normalized.find(marker)
+        if idx == -1:
+            return ""
+
+        upload_path = normalized[idx:]
+        return f"https://res.cloudinary.com/{cloud_name}/{upload_path}"
+
     def _resolve_media_url(self, value: str) -> str:
         raw_value = (value or "").strip().replace("\\", "/")
         if not raw_value:
             return ""
+
         if raw_value.startswith("http://") or raw_value.startswith("https://"):
+            cloud_url = self._as_cloudinary_url(raw_value)
+            if cloud_url:
+                return cloud_url
             return raw_value
-        if raw_value.startswith("/media/"):
-            return raw_value
+
         if raw_value.startswith("media/"):
             raw_value = raw_value[len("media/") :]
+        if raw_value.startswith("/media/"):
+            raw_value = raw_value[len("/media/") :]
 
-        cloud_name = getattr(settings, "CLOUDINARY_CLOUD_NAME", "") or os.environ.get("CLOUDINARY_CLOUD_NAME", "")
-        if cloud_name and (raw_value.startswith("image/upload/") or "/upload/" in raw_value):
-            return f"https://res.cloudinary.com/{cloud_name}/{raw_value.lstrip('/')}"
+        cloud_url = self._as_cloudinary_url(raw_value)
+        if cloud_url:
+            return cloud_url
 
         return str(settings.MEDIA_URL).rstrip("/") + "/" + raw_value.lstrip("/")
 
@@ -95,10 +133,11 @@ class Product(models.Model):
         if not self.image:
             return ""
 
+        fallback = str(getattr(self.image, "name", "") or self.image)
         try:
-            return self.image.url
+            return self._resolve_media_url(self.image.url)
         except Exception:
-            return self._resolve_media_url(str(getattr(self.image, "name", "") or self.image))
+            return self._resolve_media_url(fallback)
 
     def get_gallery_urls(self):
         urls = []
