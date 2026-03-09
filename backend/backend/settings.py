@@ -155,6 +155,8 @@ _default_csrf = [
     "https://alluring-art-production-5c03.up.railway.app",
     "http://127.0.0.1:8000",
     "http://localhost:8000",
+    "http://127.0.0.1:5173",
+    "http://localhost:5173",
     "https://chinatrade-vrai.vercel.app",
 ]
 CSRF_TRUSTED_ORIGINS = _default_csrf + _parse_csv(os.environ.get("CSRF_TRUSTED_ORIGINS", ""))

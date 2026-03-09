@@ -436,7 +436,11 @@ export default function App() {
   const cartCount = cart.reduce((acc, item) => acc + item.qty, 0);
 
   async function authPost(path, payload) {
-    const csrfToken = getCookie("csrftoken");
+    let csrfToken = getCookie("csrftoken");
+    if (!csrfToken) {
+      await fetch(`${AUTH_BASE}/csrf/`, { credentials: "include" });
+      csrfToken = getCookie("csrftoken");
+    }
     const response = await fetch(`${AUTH_BASE}/${path}/`, {
       method: "POST",
       credentials: "include",
