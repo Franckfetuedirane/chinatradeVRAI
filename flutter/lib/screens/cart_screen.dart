@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 import '../state/shop_state.dart';
 
@@ -9,22 +10,21 @@ class CartScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final formatter = NumberFormat.decimalPattern('fr_FR');
     return AnimatedBuilder(
       animation: shopState,
       builder: (context, _) {
         return Padding(
-          padding: const EdgeInsets.all(14),
+          padding: const EdgeInsets.fromLTRB(14, 10, 14, 18),
           child: Column(
             children: [
               Card(
                 child: Padding(
-                  padding: const EdgeInsets.all(12),
+                  padding: const EdgeInsets.all(14),
                   child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Align(
-                        alignment: Alignment.centerLeft,
-                        child: Text('Livraison', style: TextStyle(fontWeight: FontWeight.w700)),
-                      ),
+                      const Text('Livraison', style: TextStyle(fontWeight: FontWeight.w700)),
                       const SizedBox(height: 8),
                       DropdownButtonFormField<String>(
                         value: shopState.shippingCountry,
@@ -52,10 +52,15 @@ class CartScreen extends StatelessWidget {
                         separatorBuilder: (_, __) => const SizedBox(height: 8),
                         itemBuilder: (context, i) {
                           final item = shopState.cart[i];
+                          final total = formatter.format(item.total);
                           return Card(
                             child: ListTile(
-                              title: Text(item.product.name),
-                              subtitle: Text('${item.product.price.toStringAsFixed(0)} XAF x ${item.quantity}'),
+                              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                              title: Text(item.product.name, maxLines: 1, overflow: TextOverflow.ellipsis),
+                              subtitle: Text(
+                                '${formatter.format(item.product.price)} XAF x ${item.quantity}',
+                                style: const TextStyle(color: Color(0xFF65708B)),
+                              ),
                               trailing: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
@@ -81,12 +86,15 @@ class CartScreen extends StatelessWidget {
               ),
               Card(
                 child: Padding(
-                  padding: const EdgeInsets.all(14),
+                  padding: const EdgeInsets.all(16),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       const Text('Total', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
-                      Text('${shopState.cartTotal.toStringAsFixed(0)} XAF', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
+                      Text(
+                        '${formatter.format(shopState.cartTotal)} XAF',
+                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+                      ),
                     ],
                   ),
                 ),

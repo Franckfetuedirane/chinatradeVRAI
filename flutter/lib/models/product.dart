@@ -2,6 +2,7 @@ class Product {
   final int id;
   final String name;
   final String category;
+  final String categorySlug;
   final String description;
   final double price;
   final String country;
@@ -13,11 +14,13 @@ class Product {
   final String whatsapp;
   final String email;
   final String status;
+  final DateTime? createdAt;
 
   const Product({
     required this.id,
     required this.name,
     required this.category,
+    required this.categorySlug,
     required this.description,
     required this.price,
     required this.country,
@@ -29,6 +32,7 @@ class Product {
     required this.whatsapp,
     required this.email,
     required this.status,
+    required this.createdAt,
   });
 
   bool get isAvailable => status == 'available';
@@ -53,6 +57,7 @@ class Product {
       id: json['id'] as int,
       name: (json['name'] ?? '').toString(),
       category: (json['category'] ?? 'General').toString(),
+      categorySlug: (json['category_slug'] ?? '').toString(),
       description: (json['description'] ?? '').toString(),
       price: price,
       country: (json['country'] ?? 'Cameroun').toString(),
@@ -64,6 +69,7 @@ class Product {
       whatsapp: (json['whatsapp'] ?? '').toString(),
       email: (json['email'] ?? '').toString(),
       status: (json['status'] ?? '').toString(),
+      createdAt: DateTime.tryParse((json['created_at'] ?? '').toString()),
     );
   }
 
@@ -71,6 +77,7 @@ class Product {
         'id': id,
         'name': name,
         'category': category,
+        'category_slug': categorySlug,
         'description': description,
         'price': price,
         'country': country,
@@ -82,5 +89,6 @@ class Product {
         'whatsapp': whatsapp,
         'email': email,
         'status': status,
+        'created_at': createdAt?.toIso8601String(),
       };
 }

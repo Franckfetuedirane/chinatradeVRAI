@@ -135,6 +135,13 @@ CORS_ALLOWED_ORIGINS = list(dict.fromkeys(_default_cors_origins + _extra_cors_or
 CORS_ALLOW_ALL_ORIGINS = DEBUG
 CORS_ALLOW_CREDENTIALS = True
 
+ALLOW_LOCALHOST_ORIGINS = _parse_bool(os.environ.get("ALLOW_LOCALHOST_ORIGINS"), default=DEBUG)
+if ALLOW_LOCALHOST_ORIGINS:
+    CORS_ALLOWED_ORIGIN_REGEXES = [
+        r"^http://localhost(:\d+)?$",
+        r"^http://127\.0\.0\.1(:\d+)?$",
+    ]
+
 # CSRF CONFIGURATION
 _default_csrf = [
     "https://alluring-art-production-5c03.up.railway.app",
@@ -145,6 +152,11 @@ _default_csrf = [
     "https://chinatrade-vrai.vercel.app",
 ]
 CSRF_TRUSTED_ORIGINS = _default_csrf + _parse_csv(os.environ.get("CSRF_TRUSTED_ORIGINS", ""))
+if ALLOW_LOCALHOST_ORIGINS:
+    CSRF_TRUSTED_ORIGIN_REGEXES = [
+        r"^http://localhost(:\d+)?$",
+        r"^http://127\.0\.0\.1(:\d+)?$",
+    ]
 
 # Proxy/HTTPS
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
