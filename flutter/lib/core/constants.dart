@@ -6,7 +6,7 @@ class AppConfig {
   static const String apiLoginUrl = '$apiBaseUrl/api/auth/login/';
   static const String apiRegisterUrl = '$apiBaseUrl/api/auth/register/';
   static const String apiLogoutUrl = '$apiBaseUrl/api/auth/logout/';
-  static const String logoUrl = '$apiBaseUrl/static/products/img/foesa-logo.png';
+  static const String logoAsset = 'assets/foesa-logo.png';
 
   static const Map<String, List<String>> countryCities = {
     'Cameroun': [

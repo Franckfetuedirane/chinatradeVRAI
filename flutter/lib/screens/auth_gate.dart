@@ -26,8 +26,8 @@ class AuthGate extends StatelessWidget {
                   children: [
                     ClipRRect(
                       borderRadius: BorderRadius.circular(16),
-                      child: Image.network(
-                        AppConfig.logoUrl,
+                      child: Image.asset(
+                        AppConfig.logoAsset,
                         width: 76,
                         height: 76,
                         fit: BoxFit.cover,
