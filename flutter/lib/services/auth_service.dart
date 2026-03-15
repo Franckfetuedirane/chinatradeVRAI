@@ -1,6 +1,5 @@
 import 'dart:convert';
 
-import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
 import '../core/constants.dart';
@@ -23,34 +22,14 @@ class AuthService {
 
   Future<void> clearStoredSession() => _storage.clearAuth();
 
-  Future<AuthSession> ensureCsrf(AuthSession? session) async {
-    final uri = Uri.parse(AppConfig.apiCsrfUrl);
-    final response = await _client.get(uri, headers: _headers(session));
-    final body = _decodeBody(response);
-
-    final cookies = _extractCookies(response.headers['set-cookie']);
-    var csrfToken = cookies['csrftoken'] ?? (body['csrfToken']?.toString() ?? '');
-    if (csrfToken.isEmpty) {
-      csrfToken = session?.csrfToken ?? '';
-    }
-    final sessionId = cookies['sessionid'] ?? (session?.sessionId ?? '');
-
-    return AuthSession(
-      sessionId: sessionId,
-      csrfToken: csrfToken,
-      user: session?.user,
-    );
-  }
-
   Future<AuthSession> login({
     required String identity,
     required String password,
     AuthSession? current,
   }) async {
-    final session = await ensureCsrf(current);
     final response = await _client.post(
       Uri.parse(AppConfig.apiLoginUrl),
-      headers: _headers(session, includeCsrf: true),
+      headers: _headers(current),
       body: jsonEncode({'username': identity, 'password': password}),
     );
 
@@ -59,10 +38,12 @@ class AuthService {
       throw Exception(data['detail']?.toString() ?? 'Connexion impossible.');
     }
 
-    final cookies = _extractCookies(response.headers['set-cookie']);
-    final next = session.copyWith(
-      sessionId: cookies['sessionid'] ?? session.sessionId,
-      csrfToken: cookies['csrftoken'] ?? session.csrfToken,
+    final token = data['token']?.toString() ?? '';
+    if (token.isEmpty) {
+      throw Exception('Token manquant.');
+    }
+    final next = AuthSession(
+      token: token,
       user: data['user'] is Map<String, dynamic> ? AuthUser.fromJson(data['user']) : null,
     );
 
@@ -78,10 +59,9 @@ class AuthService {
     required String lastName,
     AuthSession? current,
   }) async {
-    final session = await ensureCsrf(current);
     final response = await _client.post(
       Uri.parse(AppConfig.apiRegisterUrl),
-      headers: _headers(session, includeCsrf: true),
+      headers: _headers(current),
       body: jsonEncode({
         'email': email,
         'password': password,
@@ -96,10 +76,12 @@ class AuthService {
       throw Exception(data['detail']?.toString() ?? 'Inscription impossible.');
     }
 
-    final cookies = _extractCookies(response.headers['set-cookie']);
-    final next = session.copyWith(
-      sessionId: cookies['sessionid'] ?? session.sessionId,
-      csrfToken: cookies['csrftoken'] ?? session.csrfToken,
+    final token = data['token']?.toString() ?? '';
+    if (token.isEmpty) {
+      throw Exception('Token manquant.');
+    }
+    final next = AuthSession(
+      token: token,
       user: data['user'] is Map<String, dynamic> ? AuthUser.fromJson(data['user']) : null,
     );
 
@@ -128,36 +110,20 @@ class AuthService {
   }
 
   Future<void> logout(AuthSession session) async {
-    final refreshed = await ensureCsrf(session);
     await _client.post(
       Uri.parse(AppConfig.apiLogoutUrl),
-      headers: _headers(refreshed, includeCsrf: true),
+      headers: _headers(session),
     );
     await clearStoredSession();
   }
 
-  Map<String, String> _headers(AuthSession? session, {bool includeCsrf = false}) {
+  Map<String, String> _headers(AuthSession? session) {
     final headers = <String, String>{
       'Content-Type': 'application/json',
       'Accept': 'application/json',
     };
-    if (session?.csrfToken.isNotEmpty == true && includeCsrf) {
-      headers['X-CSRFToken'] = session!.csrfToken;
-    }
-
-    if (kIsWeb) {
-      return headers;
-    }
-
-    final cookies = <String>[];
-    if (session?.csrfToken.isNotEmpty == true) {
-      cookies.add('csrftoken=${session!.csrfToken}');
-    }
-    if (session?.sessionId.isNotEmpty == true) {
-      cookies.add('sessionid=${session!.sessionId}');
-    }
-    if (cookies.isNotEmpty) {
-      headers['Cookie'] = cookies.join('; ');
+    if (session?.token.isNotEmpty == true) {
+      headers['Authorization'] = 'Token ${session!.token}';
     }
     return headers;
   }
@@ -172,13 +138,4 @@ class AuthService {
     }
   }
 
-  Map<String, String> _extractCookies(String? raw) {
-    if (raw == null || raw.isEmpty) return {};
-    final matches = RegExp(r'(csrftoken|sessionid)=([^;]+)').allMatches(raw);
-    final result = <String, String>{};
-    for (final m in matches) {
-      result[m.group(1)!] = m.group(2)!;
-    }
-    return result;
-  }
 }

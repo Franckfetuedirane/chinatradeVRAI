@@ -1,22 +1,19 @@
 import 'auth_user.dart';
 
 class AuthSession {
-  final String sessionId;
-  final String csrfToken;
+  final String token;
   final AuthUser? user;
 
   const AuthSession({
-    required this.sessionId,
-    required this.csrfToken,
+    required this.token,
     required this.user,
   });
 
-  bool get isValid => sessionId.isNotEmpty || csrfToken.isNotEmpty || user != null;
+  bool get isValid => token.isNotEmpty || user != null;
 
-  AuthSession copyWith({String? sessionId, String? csrfToken, AuthUser? user}) {
+  AuthSession copyWith({String? token, AuthUser? user}) {
     return AuthSession(
-      sessionId: sessionId ?? this.sessionId,
-      csrfToken: csrfToken ?? this.csrfToken,
+      token: token ?? this.token,
       user: user ?? this.user,
     );
   }
@@ -24,15 +21,13 @@ class AuthSession {
   factory AuthSession.fromJson(Map<String, dynamic> json) {
     final userJson = json['user'];
     return AuthSession(
-      sessionId: (json['sessionId'] ?? '').toString(),
-      csrfToken: (json['csrfToken'] ?? '').toString(),
+      token: (json['token'] ?? '').toString(),
       user: userJson is Map<String, dynamic> ? AuthUser.fromJson(userJson) : null,
     );
   }
 
   Map<String, dynamic> toJson() => {
-        'sessionId': sessionId,
-        'csrfToken': csrfToken,
+        'token': token,
         'user': user?.toJson(),
       };
 }

@@ -1,11 +1,14 @@
 import json
-import time
 
-from django.contrib.auth import authenticate, get_user_model, login, logout
+from django.contrib.auth import authenticate, get_user_model
 from django.http import JsonResponse
 from django.middleware.csrf import get_token
 from django.views.decorators.csrf import ensure_csrf_cookie
-from django.views.decorators.http import require_GET, require_POST
+from django.views.decorators.http import require_GET
+from rest_framework.authentication import TokenAuthentication
+from rest_framework.authtoken.models import Token
+from rest_framework.decorators import api_view, authentication_classes, permission_classes
+from rest_framework.permissions import AllowAny, IsAuthenticated
 
 User = get_user_model()
 
@@ -33,14 +36,16 @@ def csrf(request):
     return JsonResponse({"detail": "CSRF cookie set", "csrfToken": get_token(request)})
 
 
-@require_GET
+@api_view(["GET"])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
 def me(request):
-    if not request.user.is_authenticated:
-        return JsonResponse({"authenticated": False, "user": None})
     return JsonResponse({"authenticated": True, "user": _serialize_user(request.user)})
 
 
-@require_POST
+@api_view(["POST"])
+@authentication_classes([])
+@permission_classes([AllowAny])
 def register(request):
     data = _json_body(request)
     email = (data.get("email") or "").strip().lower()
@@ -67,12 +72,16 @@ def register(request):
         first_name=first_name,
         last_name=last_name,
     )
-    login(request, user)
-    request.session["last_activity"] = int(time.time())
-    return JsonResponse({"detail": "Inscription reussie.", "user": _serialize_user(user)}, status=201)
+    token, _ = Token.objects.get_or_create(user=user)
+    return JsonResponse(
+        {"detail": "Inscription reussie.", "token": token.key, "user": _serialize_user(user)},
+        status=201,
+    )
 
 
-@require_POST
+@api_view(["POST"])
+@authentication_classes([])
+@permission_classes([AllowAny])
 def login_view(request):
     data = _json_body(request)
     identity = (data.get("username") or data.get("email") or "").strip().lower()
@@ -90,12 +99,14 @@ def login_view(request):
     if not user:
         return JsonResponse({"detail": "Email/username ou mot de passe incorrect."}, status=401)
 
-    login(request, user)
-    request.session["last_activity"] = int(time.time())
-    return JsonResponse({"detail": "Connexion reussie.", "user": _serialize_user(user)})
+    token, _ = Token.objects.get_or_create(user=user)
+    return JsonResponse({"detail": "Connexion reussie.", "token": token.key, "user": _serialize_user(user)})
 
 
-@require_POST
+@api_view(["POST"])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
 def logout_view(request):
-    logout(request)
+    if request.auth:
+        request.auth.delete()
     return JsonResponse({"detail": "Deconnexion reussie."})
