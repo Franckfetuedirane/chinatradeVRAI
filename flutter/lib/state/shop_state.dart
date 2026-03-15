@@ -45,7 +45,7 @@ extension AvailabilityFilterLabel on AvailabilityFilter {
 
 class ShopState extends ChangeNotifier {
   ShopState({ApiService? api, LocalStorageService? storage, AuthService? auth})
-      : _api = api ?? const ApiService(),
+      : _api = api ?? ApiService(),
         _storage = storage ?? LocalStorageService(),
         _auth = auth ?? AuthService(storage: storage ?? LocalStorageService());
 

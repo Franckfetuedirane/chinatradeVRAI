@@ -11,7 +11,7 @@ class AuthSession {
     required this.user,
   });
 
-  bool get isValid => sessionId.isNotEmpty;
+  bool get isValid => sessionId.isNotEmpty || csrfToken.isNotEmpty || user != null;
 
   AuthSession copyWith({String? sessionId, String? csrfToken, AuthUser? user}) {
     return AuthSession(

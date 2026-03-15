@@ -1,15 +1,17 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
 import '../core/constants.dart';
 import '../models/auth_session.dart';
 import '../models/auth_user.dart';
+import 'http_client_factory.dart';
 import 'local_storage_service.dart';
 
 class AuthService {
   AuthService({http.Client? client, LocalStorageService? storage})
-      : _client = client ?? http.Client(),
+      : _client = client ?? createHttpClient(withCredentials: true),
         _storage = storage ?? LocalStorageService();
 
   final http.Client _client;
@@ -139,12 +141,17 @@ class AuthService {
       'Content-Type': 'application/json',
       'Accept': 'application/json',
     };
+    if (session?.csrfToken.isNotEmpty == true && includeCsrf) {
+      headers['X-CSRFToken'] = session!.csrfToken;
+    }
+
+    if (kIsWeb) {
+      return headers;
+    }
+
     final cookies = <String>[];
     if (session?.csrfToken.isNotEmpty == true) {
       cookies.add('csrftoken=${session!.csrfToken}');
-      if (includeCsrf) {
-        headers['X-CSRFToken'] = session.csrfToken;
-      }
     }
     if (session?.sessionId.isNotEmpty == true) {
       cookies.add('sessionid=${session!.sessionId}');
